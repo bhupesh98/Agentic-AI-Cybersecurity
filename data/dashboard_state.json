@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-12-04T12:18:58.535801",
+  "stats": {
+    "total_flows": 25,
+    "malicious_detected": 17,
+    "benign_detected": 8,
+    "llm_analyses": 17,
+    "actions_taken": 17,
+    "memory_lookups": 25,
+    "learning_events": 17,
+    "feedback_applied": 0,
+    "errors": 0,
+    "emails_sent": 17
+  },
+  "progress": {
+    "total_flows": 25,
+    "detection_rate": 68.0,
+    "agentic_score": 0.7142857142857143
+  }
+}

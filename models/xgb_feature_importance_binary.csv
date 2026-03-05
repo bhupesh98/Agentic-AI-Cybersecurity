@@ -1,0 +1,79 @@
+feature,importance
+Fwd Act Data Pkts,0.6360026
+Fwd Seg Size Min,0.32971308
+Fwd IAT Tot,0.015183689
+Dst Port,0.0042162747
+Bwd Header Len,0.0037126942
+ACK Flag Cnt,0.0020127387
+Bwd Pkt Len Max,0.0019242305
+Fwd Header Len,0.0016142065
+Flow IAT Min,0.00142389
+Bwd IAT Min,0.00069114345
+Flow Pkts/s,0.00068515836
+URG Flag Cnt,0.0005362004
+Flow IAT Mean,0.0004765661
+Bwd Pkts/s,0.00039376543
+Init Bwd Win Byts,0.00037582061
+Flow Duration,0.00032609902
+TotLen Fwd Pkts,0.00016209476
+Bwd Pkt Len Std,0.00014755223
+Bwd IAT Mean,0.00010008123
+Init Fwd Win Byts,7.919915e-05
+Fwd Pkts/s,7.8206824e-05
+TotLen Bwd Pkts,4.9531944e-05
+Bwd Pkt Len Mean,3.0234665e-05
+Flow IAT Std,1.6047761e-05
+Subflow Bwd Byts,1.3728648e-05
+Flow Byts/s,1.3574275e-05
+PSH Flag Cnt,6.5518443e-06
+Flow IAT Max,5.6007952e-06
+Fwd IAT Max,4.5658444e-06
+Tot Fwd Pkts,4.097537e-06
+Fwd IAT Min,7.3915874e-07
+Down/Up Ratio,0.0
+Subflow Bwd Pkts,0.0
+Idle Max,0.0
+Idle Std,0.0
+Idle Mean,0.0
+Fwd Seg Size Avg,0.0
+Bwd Seg Size Avg,0.0
+Fwd Byts/b Avg,0.0
+Fwd Pkts/b Avg,0.0
+Fwd Blk Rate Avg,0.0
+Bwd Byts/b Avg,0.0
+Bwd Pkts/b Avg,0.0
+Bwd Blk Rate Avg,0.0
+Active Min,0.0
+Active Max,0.0
+Active Std,0.0
+Active Mean,0.0
+Subflow Fwd Pkts,0.0
+Subflow Fwd Byts,0.0
+Pkt Size Avg,0.0
+Pkt Len Min,0.0
+ECE Flag Cnt,0.0
+CWE Flag Count,0.0
+Tot Bwd Pkts,0.0
+Fwd Pkt Len Max,0.0
+Fwd Pkt Len Min,0.0
+Fwd Pkt Len Mean,0.0
+Fwd Pkt Len Std,0.0
+Bwd Pkt Len Min,0.0
+Fwd IAT Mean,0.0
+Fwd IAT Std,0.0
+Bwd IAT Tot,0.0
+Bwd IAT Std,0.0
+Bwd IAT Max,0.0
+Fwd PSH Flags,0.0
+Bwd PSH Flags,0.0
+Fwd URG Flags,0.0
+Bwd URG Flags,0.0
+Protocol,0.0
+Pkt Len Max,0.0
+Pkt Len Mean,0.0
+Pkt Len Std,0.0
+Pkt Len Var,0.0
+FIN Flag Cnt,0.0
+SYN Flag Cnt,0.0
+RST Flag Cnt,0.0
+Idle Min,0.0

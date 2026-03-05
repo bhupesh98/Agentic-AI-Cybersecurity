@@ -1,0 +1,49 @@
+{
+  "model": "Random Forest",
+  "classification_type": "binary",
+  "classes": [
+    "Benign",
+    "SSH-Bruteforce"
+  ],
+  "training_time_seconds": 2.3026440143585205,
+  "n_estimators": 100,
+  "max_depth": 20,
+  "train_samples": 469759,
+  "val_samples": 100663,
+  "train_metrics": {
+    "accuracy": 0.9999893562443721,
+    "precision": 0.9999893562106038,
+    "recall": 0.9999893562443721,
+    "f1_score": 0.9999893561428755
+  },
+  "val_metrics": {
+    "accuracy": 0.9999701975899784,
+    "precision": 0.9999701971152691,
+    "recall": 0.9999701975899784,
+    "f1_score": 0.9999701971478884
+  },
+  "per_class_metrics": {
+    "Benign": {
+      "precision": 0.9999768938387421,
+      "recall": 0.9999884467858958,
+      "f1_score": 0.9999826702789508,
+      "support": 86556
+    },
+    "SSH-Bruteforce": {
+      "precision": 0.999929108180916,
+      "recall": 0.9998582264124194,
+      "f1_score": 0.9998936660404778,
+      "support": 14107
+    }
+  },
+  "confusion_matrix": [
+    [
+      86555,
+      1
+    ],
+    [
+      2,
+      14105
+    ]
+  ]
+}

@@ -1,0 +1,394 @@
+{
+  "schema_version": "2.0.0",
+  "last_updated": "2025-11-19",
+  "description": "Memory system database schema with dual ML+LLM threat scoring",
+
+  "tables": {
+    "incidents": {
+      "description": "Main incidents storage",
+      "primary_key": "incident_id",
+      "columns": {
+        "incident_id": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Unique incident identifier"
+        },
+        "session_id": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Session that detected this incident"
+        },
+        "flow_id": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Network flow identifier"
+        },
+        "timestamp": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Incident timestamp (ISO format)"
+        },
+        "detected_at": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Detection timestamp (ISO format)"
+        },
+        "src_ip": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Source IP address"
+        },
+        "dst_ip": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Destination IP address"
+        },
+        "src_port": {
+          "type": "INTEGER",
+          "nullable": true,
+          "description": "Source port"
+        },
+        "dst_port": {
+          "type": "INTEGER",
+          "nullable": true,
+          "description": "Destination port"
+        },
+        "protocol": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "Protocol (TCP/UDP/ICMP)"
+        },
+        "ml_prediction": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "ML prediction: malicious or benign"
+        },
+        "ml_confidence": {
+          "type": "REAL",
+          "nullable": true,
+          "description": "ML confidence score (0.0-1.0)"
+        },
+        "ensemble_agreement": {
+          "type": "REAL",
+          "nullable": true,
+          "description": "Model agreement score"
+        },
+        "context_flags": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "JSON array of context flags"
+        },
+        "context_reasons": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "JSON array of reasons"
+        },
+        "suspicion_score": {
+          "type": "REAL",
+          "nullable": true,
+          "description": "Overall suspicion score"
+        },
+        "llm_severity": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "LLM severity: low/medium/high/critical"
+        },
+        "llm_confidence": {
+          "type": "REAL",
+          "nullable": true,
+          "description": "LLM confidence (0.0-1.0)"
+        },
+        "llm_analysis": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "Full LLM analysis text"
+        },
+        "llm_reasoning": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "Step-by-step LLM reasoning"
+        },
+        "recommended_actions": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "JSON array of recommended actions"
+        },
+        "response_plan": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "Generated response plan"
+        },
+        "action_taken": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "Action actually executed"
+        },
+        "was_successful": {
+          "type": "INTEGER",
+          "nullable": true,
+          "description": "Success flag (0/1)"
+        },
+        "embedding_id": {
+          "type": "INTEGER",
+          "nullable": true,
+          "description": "FAISS index position"
+        },
+        "notes": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "Additional notes"
+        },
+        "created_at": {
+          "type": "TEXT",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "description": "Record creation time"
+        }
+      }
+    },
+
+    "ip_reputation": {
+      "description": "IP address reputation tracking with dual ML+LLM scoring",
+      "primary_key": "ip_address",
+      "columns": {
+        "ip_address": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "IP address being tracked"
+        },
+        "incident_count": {
+          "type": "INTEGER",
+          "nullable": false,
+          "default": 0,
+          "description": "Total incidents from this IP"
+        },
+        "malicious_count": {
+          "type": "INTEGER",
+          "nullable": false,
+          "default": 0,
+          "description": "ML-classified malicious incidents"
+        },
+        "benign_count": {
+          "type": "INTEGER",
+          "nullable": false,
+          "default": 0,
+          "description": "ML-classified benign incidents"
+        },
+        "medium_severity_count": {
+          "type": "INTEGER",
+          "nullable": false,
+          "default": 0,
+          "description": "LLM medium severity count"
+        },
+        "high_severity_count": {
+          "type": "INTEGER",
+          "nullable": false,
+          "default": 0,
+          "description": "LLM high severity count"
+        },
+        "critical_severity_count": {
+          "type": "INTEGER",
+          "nullable": false,
+          "default": 0,
+          "description": "LLM critical severity count"
+        },
+        "first_seen": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "First incident timestamp"
+        },
+        "last_seen": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Most recent incident timestamp"
+        },
+        "ml_threat_score": {
+          "type": "REAL",
+          "nullable": false,
+          "default": 0.0,
+          "description": "ML-only threat score (0.0-1.0) - demonstrates limitation"
+        },
+        "threat_score": {
+          "type": "REAL",
+          "nullable": false,
+          "default": 0.0,
+          "description": "Hybrid ML+LLM threat score (0.0-1.0) - demonstrates improvement"
+        },
+        "attack_types": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "JSON array of observed attack types"
+        },
+        "targeted_assets": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "JSON array of targeted IPs"
+        },
+        "notes": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "Additional notes"
+        },
+        "updated_at": {
+          "type": "TEXT",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "description": "Last update time"
+        }
+      },
+      "scoring_formula": {
+        "ml_threat_score": "(malicious_count / incident_count) * 1.5",
+        "threat_score": "ml_threat_score * 0.6 + llm_severity_score * 0.4",
+        "llm_severity_score": "(medium_count * 0.5 + high_count * 1.0 + critical_count * 1.5) / incident_count"
+      }
+    },
+
+    "attack_patterns": {
+      "description": "Attack pattern library",
+      "primary_key": "pattern_id",
+      "columns": {
+        "pattern_id": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Pattern identifier"
+        },
+        "pattern_name": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Human-readable pattern name"
+        },
+        "pattern_type": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Pattern category"
+        },
+        "occurrence_count": {
+          "type": "INTEGER",
+          "nullable": false,
+          "default": 0,
+          "description": "Times this pattern seen"
+        },
+        "first_detected": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "First detection timestamp"
+        },
+        "last_detected": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Most recent detection"
+        },
+        "indicators": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "JSON object of IOCs"
+        },
+        "severity": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "Pattern severity level"
+        },
+        "description": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "Pattern description"
+        },
+        "mitigation": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "Recommended mitigation"
+        },
+        "incident_ids": {
+          "type": "TEXT",
+          "nullable": true,
+          "description": "JSON array of related incident IDs"
+        }
+      }
+    },
+
+    "incident_correlations": {
+      "description": "Relationships between incidents",
+      "primary_key": "correlation_id",
+      "columns": {
+        "correlation_id": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Correlation identifier"
+        },
+        "incident_id_1": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "First incident ID"
+        },
+        "incident_id_2": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Second incident ID"
+        },
+        "correlation_type": {
+          "type": "TEXT",
+          "nullable": false,
+          "description": "Type of correlation"
+        },
+        "similarity_score": {
+          "type": "REAL",
+          "nullable": false,
+          "description": "Similarity score (0.0-1.0)"
+        },
+        "time_diff_seconds": {
+          "type": "INTEGER",
+          "nullable": false,
+          "description": "Time difference between incidents"
+        },
+        "created_at": {
+          "type": "TEXT",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "description": "Correlation creation time"
+        }
+      }
+    }
+  },
+
+  "indexes": {
+    "idx_incidents_src_ip": {
+      "table": "incidents",
+      "columns": ["src_ip"],
+      "description": "Speed up IP-based queries"
+    },
+    "idx_incidents_timestamp": {
+      "table": "incidents",
+      "columns": ["timestamp"],
+      "description": "Speed up temporal queries"
+    },
+    "idx_incidents_embedding_id": {
+      "table": "incidents",
+      "columns": ["embedding_id"],
+      "description": "FAISS index lookup"
+    },
+    "idx_correlations_incidents": {
+      "table": "incident_correlations",
+      "columns": ["incident_id_1", "incident_id_2"],
+      "description": "Speed up correlation queries"
+    }
+  },
+
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2025-11-15",
+      "changes": ["Initial schema with basic incident storage"]
+    },
+    {
+      "version": "2.0.0",
+      "date": "2025-11-19",
+      "changes": [
+        "Added dual scoring system (ml_threat_score + threat_score)",
+        "Added medium_severity_count to ip_reputation",
+        "Added high_severity_count to ip_reputation",
+        "Added critical_severity_count to ip_reputation",
+        "Updated threat calculation to include MEDIUM severity"
+      ]
+    }
+  ]
+}

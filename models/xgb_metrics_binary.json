@@ -1,0 +1,51 @@
+{
+  "model": "XGBoost",
+  "classification_type": "binary",
+  "classes": [
+    "Benign",
+    "SSH-Bruteforce"
+  ],
+  "training_time_seconds": 1.658174991607666,
+  "n_estimators": 100,
+  "max_depth": 10,
+  "learning_rate": 0.1,
+  "scale_pos_weight": 6.135507488531761,
+  "train_samples": 469759,
+  "val_samples": 100663,
+  "train_metrics": {
+    "accuracy": 0.9999978712488744,
+    "precision": 0.9999978712812091,
+    "recall": 0.9999978712488744,
+    "f1_score": 0.9999978712556405
+  },
+  "val_metrics": {
+    "accuracy": 0.9999900658633262,
+    "precision": 0.9999900665674754,
+    "recall": 0.9999900658633262,
+    "f1_score": 0.9999900660106767
+  },
+  "per_class_metrics": {
+    "Benign": {
+      "precision": 1.0,
+      "recall": 0.9999884467858958,
+      "f1_score": 0.9999942233595784,
+      "support": 86556
+    },
+    "SSH-Bruteforce": {
+      "precision": 0.999929118230791,
+      "recall": 1.0,
+      "f1_score": 0.9999645578592947,
+      "support": 14107
+    }
+  },
+  "confusion_matrix": [
+    [
+      86555,
+      1
+    ],
+    [
+      0,
+      14107
+    ]
+  ]
+}
