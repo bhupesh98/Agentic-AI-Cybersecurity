@@ -70,6 +70,7 @@ class MLModelLoader:
             rf_path = self.models_dir / "rf_model_binary.pkl"
             if rf_path.exists():
                 self.rf_model = joblib.load(rf_path)
+                self._patch_sklearn_compat(self.rf_model)
                 logger.info("✅ Random Forest model loaded")
             else:
                 logger.warning(
@@ -118,6 +119,18 @@ class MLModelLoader:
             self.models_loaded = False
             return False
 
+    def _patch_sklearn_compat(self, forest_model) -> None:
+        """
+        Patch sklearn 1.3.x pickled RandomForest models to work with sklearn >=1.4.
+        sklearn 1.4 added `monotonic_cst` to DecisionTreeClassifier; models trained
+        with 1.3 don't have this attribute, causing AttributeError on predict().
+        """
+        if forest_model is None or not hasattr(forest_model, "estimators_"):
+            return
+        for tree in forest_model.estimators_:
+            if not hasattr(tree, "monotonic_cst"):
+                tree.monotonic_cst = None
+
     def predict_single(self, features) -> Dict[str, Any]:
         """
         Make prediction on a single network flow.
@@ -150,7 +163,7 @@ class MLModelLoader:
         # Random Forest prediction
         if self.rf_model is not None:
             rf_pred = self.rf_model.predict(features_scaled)[0]
-            rf_proba = self.rf_model.predict_proba(features_scaled)[0]
+            rf_proba = np.clip(self.rf_model.predict_proba(features_scaled)[0], 0.0, 1.0)
             predictions['rf'] = {
                 'prediction': self._decode_label(rf_pred),
                 'confidence': float(np.max(rf_proba)),
@@ -160,7 +173,9 @@ class MLModelLoader:
         # XGBoost prediction
         if self.xgb_model is not None:
             xgb_pred = self.xgb_model.predict(features_scaled)[0]
-            xgb_proba = self.xgb_model.predict_proba(features_scaled)[0]
+            # Clip to [0, 1]: older pickled XGBoost models may return raw logits
+            # on extreme feature values due to version mismatch
+            xgb_proba = np.clip(self.xgb_model.predict_proba(features_scaled)[0], 0.0, 1.0)
             predictions['xgb'] = {
                 'prediction': self._decode_label(xgb_pred),
                 'confidence': float(np.max(xgb_proba)),

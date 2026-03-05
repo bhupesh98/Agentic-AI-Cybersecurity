@@ -1,8 +1,10 @@
 """
 LLM Client for Agentic Cybersecurity System.
 
-This module provides OpenAI integration for contextual threat analysis.
-Uses langchain-openai for structured LLM interactions.
+Multi-provider LLM integration supporting NVIDIA NIM, Google Gemini, and
+OpenAI. The active provider is selected automatically from available API
+keys (NVIDIA_API_KEY → GEMINI_API_KEY → OPENAI_API_KEY) or explicitly
+via the LLM_PROVIDER environment variable.
 
 Author: Abhinav
 Date: November 2025
@@ -17,65 +19,122 @@ from datetime import datetime
 import logging
 from pathlib import Path
 
-# Load environment variables from .env file
 from dotenv import load_dotenv
 
 # Load .env file from project root
 project_root = Path(__file__).parent.parent.parent
-env_path = project_root / ".env"
-load_dotenv(dotenv_path=env_path)
+load_dotenv(dotenv_path=project_root / ".env")
 
-# LangChain imports
-
-# Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Metrics integration (Week 1 Day 2)
+# Metrics integration
 try:
     from src.metrics import get_metrics_collector
     METRICS_AVAILABLE = True
 except ImportError:
     METRICS_AVAILABLE = False
-    logger.warning(
-        "Metrics module not available. Metrics collection disabled.")
+    logger.warning("Metrics module not available. Metrics collection disabled.")
+
+
+# ---------------------------------------------------------------------------
+# Provider factory
+# ---------------------------------------------------------------------------
+
+_NVIDIA_DEFAULT_BASE_URL = "https://integrate.api.nvidia.com/v1"
+_NVIDIA_DEFAULT_MODEL = "meta/llama-3.1-70b-instruct"
+_GEMINI_DEFAULT_MODEL = "gemini-1.5-flash"
+_OPENAI_DEFAULT_MODEL = "gpt-4o-mini"
+
+
+def _detect_provider() -> str:
+    """Return the provider to use based on LLM_PROVIDER env var or key presence."""
+    explicit = os.getenv("LLM_PROVIDER", "auto").lower().strip()
+    if explicit != "auto":
+        return explicit  # "nvidia", "gemini", "openai", or "none"
+    if os.getenv("NVIDIA_API_KEY"):
+        return "nvidia"
+    if os.getenv("GEMINI_API_KEY"):
+        return "gemini"
+    if os.getenv("OPENAI_API_KEY"):
+        return "openai"
+    return "none"
+
+
+def _build_llm(provider: str, temperature: float = 0.1):
+    """Instantiate and return the appropriate LangChain chat model."""
+    if provider == "nvidia":
+        api_key = os.getenv("NVIDIA_API_KEY")
+        if not api_key:
+            raise ValueError("NVIDIA_API_KEY not set")
+        base_url = os.getenv("NVIDIA_BASE_URL", _NVIDIA_DEFAULT_BASE_URL)
+        model = os.getenv("NVIDIA_MODEL", _NVIDIA_DEFAULT_MODEL)
+        logger.info(f"✅ LLM provider: NVIDIA NIM  model={model}")
+        return ChatOpenAI(
+            model=model,
+            temperature=temperature,
+            api_key=api_key,
+            base_url=base_url,
+        )
+
+    if provider == "gemini":
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY not set")
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        model = os.getenv("GEMINI_MODEL", _GEMINI_DEFAULT_MODEL)
+        logger.info(f"✅ LLM provider: Google Gemini  model={model}")
+        return ChatGoogleGenerativeAI(
+            model=model,
+            temperature=temperature,
+            google_api_key=api_key,
+        )
+
+    if provider == "openai":
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise ValueError("OPENAI_API_KEY not set")
+        model = os.getenv("OPENAI_MODEL", _OPENAI_DEFAULT_MODEL)
+        logger.info(f"✅ LLM provider: OpenAI  model={model}")
+        return ChatOpenAI(
+            model=model,
+            temperature=temperature,
+            api_key=api_key,
+        )
+
+    # provider == "none" or unknown
+    return None
 
 
 class CyberSecurityLLM:
     """
     LLM client for cybersecurity threat analysis.
-    
-    Provides contextual analysis of detected threats using OpenAI.
+
+    Provider priority (auto-detection):
+      NVIDIA NIM → Google Gemini → OpenAI → disabled
+
+    Override with LLM_PROVIDER=nvidia|gemini|openai|none
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o-mini"):
-        """
-        Initialize the LLM client.
-        
-        Args:
-            api_key: OpenAI API key. If None, reads from OPENAI_API_KEY env var
-            model: OpenAI model to use (default: gpt-4o-mini for cost efficiency)
-        """
-        # Get API key
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-
-        if not self.api_key:
+    def __init__(self):
+        """Initialise the LLM client using the best available provider."""
+        provider = _detect_provider()
+        if provider == "none":
             logger.warning(
-                "⚠️  OPENAI_API_KEY not found. LLM analysis will be disabled.")
+                "⚠️  No LLM API key found (NVIDIA_API_KEY / GEMINI_API_KEY / "
+                "OPENAI_API_KEY).  LLM analysis will be disabled."
+            )
             self.llm = None
+            self.provider = "none"
             return
 
-        # Initialize ChatOpenAI
         try:
-            self.llm = ChatOpenAI(
-                model=model,
-                temperature=0.1,  # Low temperature for consistent analysis
-                api_key=self.api_key
-            )
-            logger.info(f"✅ LLM initialized: {model}")
+            self.llm = _build_llm(provider)
+            self.provider = provider
         except Exception as e:
-            logger.error(f"❌ Failed to initialize LLM: {str(e)}")
+            logger.error(f"❌ Failed to initialise LLM ({provider}): {e}")
             self.llm = None
+            self.provider = "none"
 
     def analyze_threat(
         self,
@@ -97,7 +156,7 @@ class CyberSecurityLLM:
         if self.llm is None:
             return {
                 "analysis": "LLM not available",
-                "reasoning": "OpenAI API key not configured",
+                "reasoning": "No LLM provider configured",
                 "severity": "unknown",
                 "recommended_actions": []
             }

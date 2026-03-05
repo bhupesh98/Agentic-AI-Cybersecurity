@@ -17,6 +17,7 @@ dependencies = [
     # LLM / Agent orchestration
     "langgraph>=0.2",
     "langchain-openai>=0.2",
+    "langchain-google-genai>=2.0",
     "langchain-core>=0.3",
     "openai>=1.50",
     # Config & env
