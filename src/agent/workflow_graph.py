@@ -12,7 +12,6 @@ Date: November 2025
 """
 
 from typing import Dict, Any
-from datetime import datetime
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 
@@ -247,7 +246,7 @@ def ml_detect_node(state: AgentState) -> AgentState:
                     for _ in range(len(predictions)):
                         collector.record_incident_tools(tools_used)
 
-                except Exception as e:
+                except Exception:
                     pass  # Fail silently for metrics
 
             # Log routing breakdown
@@ -405,7 +404,7 @@ def llm_analyze_node(state: AgentState) -> AgentState:
                         # Tool Utilization - LLM used
                         collector.record_tool_invocation('LLM', success=True)
 
-                    except Exception as e:
+                    except Exception:
                         pass  # Fail silently for metrics
 
                 state["messages"].append(
@@ -663,7 +662,7 @@ def memory_lookup_node(state: AgentState) -> AgentState:
 
             # Log memory findings
             if memory_context.has_context():
-                state["messages"].append(f"   ✅ Memory context found:")
+                state["messages"].append("   ✅ Memory context found:")
                 if memory_context.is_repeat_offender and memory_context.incidents_from_this_ip > 0:
                     state["messages"].append(
                         f"      • Repeat offender: {memory_context.incidents_from_this_ip} previous incidents")
@@ -689,7 +688,7 @@ def memory_lookup_node(state: AgentState) -> AgentState:
                         pass
             else:
                 state["messages"].append(
-                    f"   ℹ️  No prior context for this threat")
+                    "   ℹ️  No prior context for this threat")
 
             memory_contexts.append({
                 'flow_id': flow_id,
@@ -697,7 +696,7 @@ def memory_lookup_node(state: AgentState) -> AgentState:
             })
 
             # Store incident in memory
-            state["messages"].append(f"   💾 Storing incident in memory")
+            state["messages"].append("   💾 Storing incident in memory")
             
             # Record storage operation with timing
             if METRICS_AVAILABLE:
@@ -743,7 +742,7 @@ def memory_lookup_node(state: AgentState) -> AgentState:
         print(traceback.format_exc())
 
     print("\n" + "="*70)
-    print(f"🧠 MEMORY LOOKUP NODE COMPLETED")
+    print("🧠 MEMORY LOOKUP NODE COMPLETED")
     print(f"   Contexts created: {len(state.get('memory_contexts', []))}")
     print(f"   Incidents stored: {len(state.get('stored_incident_ids', []))}")
     print("="*70 + "\n")

@@ -14,7 +14,6 @@ Date: November 2025
 
 import json
 import sqlite3
-import pandas as pd
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
@@ -203,7 +202,7 @@ class DashboardDataLoader:
             conn.close()
             return threats
 
-        except Exception as e:
+        except Exception:
             # Silent failure
             return []
 
@@ -308,7 +307,7 @@ class DashboardDataLoader:
 
             return summary
 
-        except Exception as e:
+        except Exception:
             # Silently handle errors
             return None
 
@@ -499,7 +498,7 @@ class DashboardDataLoader:
             conn.close()
             return emails
 
-        except Exception as e:
+        except Exception:
             # Silently handle errors (don't spam console)
             return []
 

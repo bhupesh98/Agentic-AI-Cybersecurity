@@ -18,8 +18,6 @@ import sys
 import os
 import time
 import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Any
 
@@ -305,7 +303,6 @@ class DatasetReplayDetector:
         if total == 0:
             return
 
-        detection_rate = self.stats['threats_detected'] / total
         agentic_score = 0.888  # Placeholder
 
         ColoredLogger.print_system_status(

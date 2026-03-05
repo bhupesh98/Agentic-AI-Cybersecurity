@@ -14,7 +14,10 @@ Date: November 2025
 
 # CRITICAL: Path setup MUST be done BEFORE any local imports
 import sys
+import time
 from pathlib import Path
+
+import streamlit as st
 
 # Add project root to path (2 levels up from src/dashboard/)
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -22,7 +25,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 # Now import our dashboard modules (after path is set up)
-from src.dashboard.dashboard_components import (
+from src.dashboard.dashboard_components import (  # noqa: E402
     render_live_counter,
     render_threat_card,
     render_principle_gauge,
@@ -30,12 +33,9 @@ from src.dashboard.dashboard_components import (
     render_email_log,
     render_stats_table,
     render_system_status,
-    render_overall_score,
-    COLORS
+    render_overall_score
 )
-from src.dashboard.dashboard_data_loader import DashboardDataLoader
-import streamlit as st
-import time
+from src.dashboard.dashboard_data_loader import DashboardDataLoader  # noqa: E402
 
 
 # ============================================================================

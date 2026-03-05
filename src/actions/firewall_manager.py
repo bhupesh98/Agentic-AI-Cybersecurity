@@ -11,7 +11,6 @@ Author: Abhinav
 Date: November 2025
 """
 
-import os
 import sys
 import platform
 import subprocess
@@ -20,7 +19,7 @@ import sqlite3
 from typing import List, Optional, Tuple, Dict, Any
 from datetime import datetime, timedelta
 from pathlib import Path
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 # Setup logging
@@ -179,7 +178,7 @@ class FirewallManager:
         if self.os_type == 'macos':
             self._init_pfctl_table()
 
-        self.logger.info(f"✅ FirewallManager initialized")
+        self.logger.info("✅ FirewallManager initialized")
 
     def _init_database(self):
         """Create blocked_ips database table"""
@@ -685,11 +684,11 @@ if __name__ == "__main__":
     success, msg = fw.block_ip(test_ip, "Test block", duration_minutes=1)
     print(f"   Result: {msg}")
 
-    print(f"\n📋 Test 2: List active blocks")
+    print("\n📋 Test 2: List active blocks")
     active = fw.list_active_blocks()
     print(f"   Active blocks: {active}")
 
-    print(f"\n📋 Test 3: Get blocked IPs from DB")
+    print("\n📋 Test 3: Get blocked IPs from DB")
     blocked = fw.get_blocked_ips()
     for b in blocked:
         print(f"   - {b.ip_address}: {b.reason} (expires: {b.expires_at})")
@@ -698,7 +697,7 @@ if __name__ == "__main__":
     success, msg = fw.unblock_ip(test_ip)
     print(f"   Result: {msg}")
 
-    print(f"\n📋 Test 5: Verify unblocked")
+    print("\n📋 Test 5: Verify unblocked")
     active = fw.list_active_blocks()
     print(f"   Active blocks: {active}")
 

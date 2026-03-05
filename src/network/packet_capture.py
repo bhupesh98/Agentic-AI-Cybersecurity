@@ -8,7 +8,6 @@ Location: src/network/packet_capture.py
 """
 
 from scapy.all import sniff, IP, TCP, UDP, ICMP
-from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Dict, Tuple, Optional, List, Callable
 from datetime import datetime

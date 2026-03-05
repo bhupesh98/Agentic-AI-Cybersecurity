@@ -21,7 +21,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 import re
 
 
@@ -578,7 +578,7 @@ if __name__ == "__main__":
 
     # Get metrics
     metrics = manager.get_feedback_metrics(total_incidents=100)
-    print(f"\nFeedback Metrics:")
+    print("\nFeedback Metrics:")
     print(f"  Total feedback: {metrics.total_feedback}")
     print(f"  Active rules: {metrics.active_rules}")
     print(f"  Application rate: {metrics.application_rate:.1%}")

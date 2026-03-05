@@ -17,11 +17,10 @@ Date: November 2025
 """
 
 import sqlite3
-import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List
 from dataclasses import dataclass, asdict
 
 
@@ -305,10 +304,6 @@ class AdaptiveLearningManager:
             # Not enough data to make decision
             return
 
-        # Calculate average recent performance
-        recent_avg_f1 = sum(s[2] for s in snapshots[:3]) / \
-            3 if len(snapshots) >= 3 else snapshots[0][2]
-
         # Simple learning rule: if F1 is declining, try adjusting
         if len(snapshots) >= 3:
             # Current - 2 iterations ago
@@ -571,7 +566,7 @@ if __name__ == "__main__":
 
     # Get metrics
     metrics = manager.get_learning_metrics()
-    print(f"\nLearning Metrics:")
+    print("\nLearning Metrics:")
     print(f"  Total adjustments: {metrics.total_adjustments}")
     print(f"  Thresholds learned: {metrics.thresholds_learned}")
     print(f"  Average improvement: {metrics.average_improvement:.3f}")

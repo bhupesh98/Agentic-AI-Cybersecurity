@@ -12,7 +12,6 @@ Author: Abhinav
 Date: November 2025
 """
 
-from typing import Dict, Any, List
 import uuid
 from datetime import datetime
 
@@ -120,7 +119,7 @@ def enhanced_respond_node(state: AgentState) -> AgentState:
             attack_in_progress=True
         )
 
-        print(f"\n🎯 Threat Context:")
+        print("\n🎯 Threat Context:")
         print(f"   Source IP: {context.source_ip}")
         print(f"   Type: {context.threat_type}")
         print(f"   Severity: {context.severity}")
@@ -130,7 +129,7 @@ def enhanced_respond_node(state: AgentState) -> AgentState:
         # Get policy suggestions
         policy_suggestion = policy_engine.suggest_actions(context)
 
-        print(f"\n📋 Policy Suggestion:")
+        print("\n📋 Policy Suggestion:")
         print(f"   Policy: {policy_suggestion['policy']}")
         print(f"   Actions: {policy_suggestion['actions']}")
         print(f"   Parameters: {policy_suggestion['parameters']}")
@@ -214,7 +213,7 @@ Automated Response:
 
     except Exception as e:
         import traceback
-        print(f"\n❌ ERROR in enhanced_respond_node:")
+        print("\n❌ ERROR in enhanced_respond_node:")
         print(traceback.format_exc())
         state["messages"].append(f"❌ Response planning failed: {str(e)}")
         state['selected_actions'] = []
@@ -329,7 +328,7 @@ def enhanced_execute_node(state: AgentState) -> AgentState:
                     )
                     if verified:
                         print(f"   ✅ Verified: {msg}")
-                        state["messages"].append(f"   ✅ Verification passed")
+                        state["messages"].append("   ✅ Verification passed")
 
             # Store results
             state['execution_results'] = [r.to_dict() for r in results]
@@ -338,7 +337,7 @@ def enhanced_execute_node(state: AgentState) -> AgentState:
             success_count = sum(1 for r in results if r.success)
             success_rate = success_count / len(results) if results else 0
 
-            print(f"\n📊 Execution Summary:")
+            print("\n📊 Execution Summary:")
             print(f"   Total actions: {len(results)}")
             print(f"   Successful: {success_count}")
             print(f"   Failed: {len(results) - success_count}")
@@ -383,7 +382,7 @@ def enhanced_execute_node(state: AgentState) -> AgentState:
 
     except Exception as e:
         import traceback
-        print(f"\n❌ ERROR in enhanced_execute_node:")
+        print("\n❌ ERROR in enhanced_execute_node:")
         print(traceback.format_exc())
         state["messages"].append(f"❌ Execution failed: {str(e)}")
         state['execution_results'] = []

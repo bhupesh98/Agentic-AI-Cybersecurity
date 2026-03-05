@@ -20,20 +20,20 @@ import signal
 import time
 import threading
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 # Add project root to path for imports
 _project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 
-from src.utils.colored_logger import ColoredLogger, get_logger
-from src.agent.state_management import create_initial_state, NetworkFlow as StateNetworkFlow
-from src.agent.workflow_graph import create_workflow
-from src.ml_detection.model_loader import get_model_loader
-from src.network.feature_extractor import FeatureExtractor
-from src.network.packet_capture import PacketCapture, NetworkFlow
-from src.network.flow_processor import FlowProcessor
+from src.utils.colored_logger import ColoredLogger, get_logger  # noqa: E402
+from src.agent.state_management import create_initial_state, NetworkFlow as StateNetworkFlow  # noqa: E402
+from src.agent.workflow_graph import create_workflow  # noqa: E402
+from src.ml_detection.model_loader import get_model_loader  # noqa: E402
+from src.network.feature_extractor import FeatureExtractor  # noqa: E402
+from src.network.packet_capture import PacketCapture, NetworkFlow  # noqa: E402
+from src.network.flow_processor import FlowProcessor  # noqa: E402
 
 # Import components
 
@@ -336,8 +336,6 @@ class RealtimeDetector:
         active_flows = len(self.packet_capture.flows)
 
         # Calculate agentic score (simplified)
-        total = max(1, self.stats['flows_analyzed'])
-        detection_rate = self.stats['threats_detected'] / total
         agentic_score = 0.888  # Placeholder - should calculate from metrics
 
         ColoredLogger.print_system_status(
@@ -374,7 +372,7 @@ class RealtimeDetector:
                 if self.flow_processor:
                     self.logger.info("  Waiting for workers to finish...")
                     self.flow_processor.stop()
-                    self.logger.info(f"  ✅ Processed all flows")
+                    self.logger.info("  ✅ Processed all flows")
 
         print("\n")
         ColoredLogger.print_separator()

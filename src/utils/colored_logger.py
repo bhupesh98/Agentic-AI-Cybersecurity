@@ -9,7 +9,7 @@ Author: Abhinav
 Date: November 2025
 """
 
-from colorama import Fore, Back, Style, init
+from colorama import Fore, Style, init
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 import sys

@@ -23,7 +23,6 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List
-import json
 
 # Add project root
 _project_root = os.path.dirname(os.path.dirname(
@@ -407,9 +406,9 @@ BEGIN ANALYSIS:
         print(f"🔴 STAGE {stage_num} DETECTED: {stage_name}")
         print(f"{'='*70}")
         print(f"Severity: {severity} | Confidence: {confidence:.0%}")
-        print(f"\n🤖 LLM Analysis Preview:")
+        print("\n🤖 LLM Analysis Preview:")
         print(f"{llm_preview}")
-        print(f"\n📄 Full analysis saved to report")
+        print("\n📄 Full analysis saved to report")
         print(f"{'='*70}\n")
 
     def generate_campaign_report(self) -> str:
@@ -423,19 +422,19 @@ BEGIN ANALYSIS:
         report_filename = f"apt_analysis_{self.campaign_name.replace(' ', '_')}_{timestamp}.txt"
         report_path = self.report_dir / report_filename
 
-        self.logger.info(f"📝 Generating comprehensive report...")
+        self.logger.info("📝 Generating comprehensive report...")
 
         with open(report_path, 'w') as f:
             # Header
             f.write("="*80 + "\n")
-            f.write(f"APT CAMPAIGN ANALYSIS REPORT\n")
+            f.write("APT CAMPAIGN ANALYSIS REPORT\n")
             f.write("="*80 + "\n\n")
 
             f.write(f"Campaign Name: {self.campaign_name}\n")
             f.write(f"Analysis Session: {self.session_id}\n")
             f.write(
                 f"Report Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write(f"Detector: LLM-Focused APT Detector v1.0\n")
+            f.write("Detector: LLM-Focused APT Detector v1.0\n")
             f.write(f"Total Stages Detected: {len(self.detected_stages)}\n\n")
 
             # Executive Summary
@@ -449,16 +448,16 @@ BEGIN ANALYSIS:
                 1 for s in self.detected_stages if s.get('severity') == 'high')
 
             f.write(
-                f"This report documents the detection and analysis of a multi-stage Advanced\n")
+                "This report documents the detection and analysis of a multi-stage Advanced\n")
             f.write(
                 f"Persistent Threat (APT) campaign identified as '{self.campaign_name}'.\n\n")
-            f.write(f"Key Findings:\n")
+            f.write("Key Findings:\n")
             f.write(
                 f"- {len(self.detected_stages)} distinct attack stages identified\n")
             f.write(f"- {critical_stages} CRITICAL severity stages\n")
             f.write(f"- {high_stages} HIGH severity stages\n")
             f.write(
-                f"- Sophisticated multi-stage attack requiring advanced detection\n\n")
+                "- Sophisticated multi-stage attack requiring advanced detection\n\n")
 
             # Detailed Stage Analysis
             f.write("\n" + "="*80 + "\n")
@@ -502,14 +501,14 @@ BEGIN ANALYSIS:
             f.write("="*80 + "\n\n")
 
             f.write(
-                f"The LLM-based analysis successfully identified and characterized all\n")
+                "The LLM-based analysis successfully identified and characterized all\n")
             f.write(
                 f"{len(self.detected_stages)} stages of the '{self.campaign_name}' APT campaign.\n\n")
             f.write(
-                f"This detection demonstrates the value of contextual reasoning and behavioral\n")
+                "This detection demonstrates the value of contextual reasoning and behavioral\n")
             f.write(
-                f"analysis in identifying sophisticated threats that may evade signature-based\n")
-            f.write(f"or pattern-matching approaches.\n\n")
+                "analysis in identifying sophisticated threats that may evade signature-based\n")
+            f.write("or pattern-matching approaches.\n\n")
 
             f.write("="*80 + "\n")
             f.write("END OF REPORT\n")

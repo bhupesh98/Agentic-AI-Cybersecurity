@@ -18,19 +18,18 @@ Date: November 2025
 
 import sys
 import os
-from typing import Optional, Callable
+from typing import Optional
 import time
-import threading
 import random
 from dataclasses import dataclass
-from scapy.all import IP, TCP, UDP, ICMP, Raw, send, sr1
+from scapy.all import IP, TCP, Raw, send
 
 # Add project root to path for imports
 _project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 
-from src.utils.colored_logger import get_logger, ColoredLogger
+from src.utils.colored_logger import get_logger, ColoredLogger  # noqa: E402
 
 
 @dataclass

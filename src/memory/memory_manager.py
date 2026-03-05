@@ -14,7 +14,7 @@ import os
 import logging
 import json
 from datetime import datetime, timedelta
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Optional, Dict, Any
 from pathlib import Path
 
 # FAISS for vector similarity search
@@ -125,7 +125,7 @@ class MemoryManager:
         if FAISS_AVAILABLE:
             self._init_faiss()
         
-        logger.info(f"✅ Memory Manager initialized successfully")
+        logger.info("✅ Memory Manager initialized successfully")
     
     def _init_database(self):
         """Initialize SQLite database with schema."""

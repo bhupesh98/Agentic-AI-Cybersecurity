@@ -116,7 +116,7 @@ def main():
         usage = response.usage
         print_info(
             f"Tokens used: {usage.total_tokens} (prompt: {usage.prompt_tokens}, completion: {usage.completion_tokens})")
-        print_info(f"Estimated cost: ~$0.0001")
+        print_info("Estimated cost: ~$0.0001")
 
     except ImportError:
         print_error("OpenAI Python package not installed!")

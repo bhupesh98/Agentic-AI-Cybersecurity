@@ -6,7 +6,7 @@ that ML models might miss. Implements the "contextual awareness" principle.
 
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any
 from datetime import datetime
 import logging
 
@@ -248,7 +248,7 @@ if __name__ == "__main__":
     result_1 = analyzer.analyze_context(test_flow_1)
     print(f"  Suspicious: {result_1['is_suspicious']}")
     print(f"  Flags: {result_1['flags']}")
-    print(f"  Reasons:")
+    print("  Reasons:")
     for reason in result_1['reasons']:
         print(f"    • {reason}")
     print(f"  Suspicion Score: {result_1['suspicion_score']:.2f}")
@@ -293,7 +293,7 @@ if __name__ == "__main__":
     result_3 = analyzer.analyze_context(test_flow_3)
     print(f"  Suspicious: {result_3['is_suspicious']}")
     print(f"  Flags: {result_3['flags']}")
-    print(f"  Reasons:")
+    print("  Reasons:")
     for reason in result_3['reasons']:
         print(f"    • {reason}")
     print(f"  Suspicion Score: {result_3['suspicion_score']:.2f}")

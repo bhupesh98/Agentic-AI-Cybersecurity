@@ -84,7 +84,6 @@ def render_threat_card(threat: Dict):
         threat: Dictionary with threat information
     """
     severity = threat.get('llm_severity', 'MEDIUM').upper()
-    color = COLORS.get(severity.lower(), COLORS['medium'])
     icon = SEVERITY_ICONS.get(severity, '🟡')
 
     # Extract timestamp
@@ -95,7 +94,7 @@ def render_threat_card(threat: Dict):
             time_display = dt.strftime('%H:%M:%S')
         else:
             time_display = timestamp_str
-    except:
+    except Exception:
         time_display = timestamp_str
 
     # Truncate analysis
@@ -150,13 +149,10 @@ def render_principle_gauge(name: str, score: float):
 
     # Determine color based on score
     if percentage >= 80:
-        color = '#4CAF50'  # Green
         status = '🟢'
     elif percentage >= 50:
-        color = '#FF9800'  # Orange
         status = '🟡'
     else:
-        color = '#F44336'  # Red
         status = '🔴'
 
     # Display using Streamlit native components
@@ -224,7 +220,7 @@ def render_email_log(emails: List[Dict]):
             dt = datetime.fromisoformat(
                 email['timestamp'].replace('Z', '+00:00'))
             time_str = dt.strftime('%Y-%m-%d %H:%M:%S')
-        except:
+        except Exception:
             time_str = email['timestamp']
 
         # Status icon
@@ -238,7 +234,6 @@ def render_email_log(emails: List[Dict]):
         })
 
     # Create styled table
-    import pandas as pd
     df = pd.DataFrame(rows)
 
     st.dataframe(
@@ -260,7 +255,6 @@ def render_stats_table(stats: Dict):
     Args:
         stats: Dictionary of statistics
     """
-    import pandas as pd
 
     # Format stats into rows
     rows = []
@@ -305,11 +299,9 @@ def render_system_status(is_running: bool, last_update: str):
     """
     # Determine status
     if is_running:
-        status_color = COLORS['benign']
         status_text = "🟢 LIVE"
         pulse = "animation: pulse 2s infinite;"
     else:
-        status_color = COLORS['low']
         status_text = "🟡 IDLE"
         pulse = ""
 
@@ -317,7 +309,7 @@ def render_system_status(is_running: bool, last_update: str):
     try:
         dt = datetime.fromisoformat(last_update.replace('Z', '+00:00'))
         time_display = dt.strftime('%Y-%m-%d %H:%M:%S')
-    except:
+    except Exception:
         time_display = last_update
 
     st.markdown(f"""

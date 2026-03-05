@@ -14,7 +14,7 @@ Date: November 2025
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 
@@ -427,7 +427,7 @@ if __name__ == "__main__":
 
     # Get statistics
     stats = learning.get_learning_statistics()
-    print(f"\nLearning Statistics:")
+    print("\nLearning Statistics:")
     print(f"  Total rules: {stats['total_rules']}")
     print(f"  Total applications: {stats['total_applications']}")
     print(f"  Application rate: {stats['application_rate']:.1%}")

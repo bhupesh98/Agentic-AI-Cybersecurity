@@ -13,7 +13,6 @@ Date: November 2025
 
 import numpy as np
 from typing import List, Dict, Any
-from dataclasses import dataclass
 
 
 # CIC-IDS Feature Names (78 total, in exact order from dataset)

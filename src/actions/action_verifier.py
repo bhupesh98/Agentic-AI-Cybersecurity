@@ -15,7 +15,7 @@ Date: November 2025
 
 import logging
 import time
-from typing import Tuple, Optional
+from typing import Tuple
 from datetime import datetime
 
 

@@ -15,10 +15,10 @@ Date: November 2025
 
 import time
 import random
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Dict, Any
 from dataclasses import dataclass
-from scapy.all import IP, TCP, UDP, Raw, send
+from scapy.all import IP, TCP, Raw, send
 import logging
 
 
@@ -376,7 +376,7 @@ class APTCampaign:
         }
 
         self.logger.info(f"\n{'='*60}")
-        self.logger.info(f"✅ Campaign Complete!")
+        self.logger.info("✅ Campaign Complete!")
         self.logger.info(f"   Duration: {duration:.1f}s")
         self.logger.info(f"   Packets: {total_packets}")
         self.logger.info(f"{'='*60}\n")

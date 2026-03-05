@@ -12,9 +12,8 @@ Date: November 2025
 
 import os
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 from datetime import datetime
-from collections import defaultdict
 
 from src.metrics.models import (
     AgenticAIMetricsSummary,
@@ -639,7 +638,7 @@ class MetricsCollector:
                         self.memory_management.total_incidents_stored * utilization
                     )
 
-            self.logger.debug(f"📊 Memory stats updated from memory manager")
+            self.logger.debug("📊 Memory stats updated from memory manager")
 
         self._safe_execute(_record)
 

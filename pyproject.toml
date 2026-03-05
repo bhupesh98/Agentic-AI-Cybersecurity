@@ -67,6 +67,12 @@ packages = ["src", "config"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+exclude = [
+    "notebooks/02_feature_engineering.ipynb",
+    "notebooks/04_ensemble_evaluation.ipynb",
+    "notebooks/05_memory_system.ipynb",
+    "notebooks/06_llm_reasoning_tests.ipynb",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

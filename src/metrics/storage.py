@@ -67,7 +67,7 @@ class MetricsStorageManager:
         # Initialize database
         self._initialize_database()
 
-        self.logger.info(f"✅ Metrics Storage Manager initialized")
+        self.logger.info("✅ Metrics Storage Manager initialized")
         self.logger.info(f"   Database: {self.db_path}")
         self.logger.info(f"   Exports: {self.export_dir}")
 

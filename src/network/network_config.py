@@ -8,7 +8,6 @@ Location: src/network/network_config.py
 import socket
 import subprocess
 import json
-import os
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 from dataclasses import dataclass, asdict
@@ -323,7 +322,7 @@ class NetworkConfigManager:
         if success:
             print(f"   ✅ Ping successful! Average latency: {latency:.2f} ms")
         else:
-            print(f"   ❌ Ping failed. Check network connection.")
+            print("   ❌ Ping failed. Check network connection.")
 
         # Test ping to attacker if known
         if config.attacker_ip:
@@ -334,7 +333,7 @@ class NetworkConfigManager:
                 print(
                     f"   ✅ Ping successful! Average latency: {latency:.2f} ms")
             else:
-                print(f"   ❌ Ping failed. Check network connection.")
+                print("   ❌ Ping failed. Check network connection.")
 
         print("\n" + "=" * 60)
 

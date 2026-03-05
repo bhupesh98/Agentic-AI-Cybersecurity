@@ -20,7 +20,6 @@ Date: November 2025
 import logging
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
-from datetime import datetime
 
 
 # Setup logging
@@ -364,12 +363,12 @@ Recommended Actions:
             explanation += f"  - {action}\n"
 
         if suggestion['parameters']:
-            explanation += f"\nParameters:\n"
+            explanation += "\nParameters:\n"
             for key, value in suggestion['parameters'].items():
                 explanation += f"  - {key}: {value}\n"
 
         if suggestion['context_factors']:
-            explanation += f"\nContext Factors:\n"
+            explanation += "\nContext Factors:\n"
             for key, value in suggestion['context_factors'].items():
                 if value:
                     explanation += f"  - {key}: {value}\n"
@@ -417,7 +416,7 @@ if __name__ == "__main__":
 
     engine = get_policy_engine()
 
-    print(f"\n✅ PolicyEngine initialized")
+    print("\n✅ PolicyEngine initialized")
     print(f"   Loaded policies: {len(engine.policies)}")
 
     # Test Case 1: High severity threat

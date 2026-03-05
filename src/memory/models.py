@@ -316,12 +316,12 @@ class MemoryContext:
 
         # Patterns
         if self.detected_patterns:
-            lines.append(f"\nDetected Attack Patterns:")
+            lines.append("\nDetected Attack Patterns:")
             for pattern in self.detected_patterns:
                 lines.append(f"  - {pattern}")
 
         # Summary stats
-        lines.append(f"\nMemory Statistics:")
+        lines.append("\nMemory Statistics:")
         lines.append(
             f"  - Total incidents in memory: {self.total_incidents_in_memory}")
         lines.append(
