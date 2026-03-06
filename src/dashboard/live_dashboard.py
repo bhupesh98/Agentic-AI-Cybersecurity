@@ -40,6 +40,18 @@ try:
 except ImportError:
     METRICS_AVAILABLE = False
 
+try:
+    from src.llm_agent.llm_budget_manager import get_budget_manager
+    BUDGET_AVAILABLE = True
+except ImportError:
+    BUDGET_AVAILABLE = False
+
+try:
+    from src.simulation.simulation_manager import is_simulation
+    SIMULATION_AVAILABLE = True
+except ImportError:
+    SIMULATION_AVAILABLE = False
+
 
 # ============================================================================
 # PAGE CONFIGURATION
@@ -145,6 +157,13 @@ st.markdown('<h1 class="main-header">🛡️ Agentic AI Cybersecurity Dashboard<
             unsafe_allow_html=True)
 st.markdown("---")
 
+# Simulation mode notice
+if SIMULATION_AVAILABLE:
+    if is_simulation():
+        st.info("🔵 **SIMULATION_MODE = True** — firewall/alert actions are logged, not executed.")
+    else:
+        st.warning("🔴 **SIMULATION_MODE = False** — live defensive actions are ACTIVE.")
+
 # Status indicator
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
@@ -175,6 +194,16 @@ time_range = st.sidebar.selectbox(
     ["Last 5 minutes", "Last 15 minutes", "Last hour", "Last 24 hours", "All time"],
     index=2
 )
+
+# Multi-page navigation
+st.sidebar.header("📄 Pages")
+st.sidebar.markdown("""
+- **Home** — overview metrics (this page)
+- **Threat Feed** → ← use top nav
+- **Attack Graphs** → ← use top nav
+- **Agent Insights** → ← use top nav
+- **System Metrics** → ← use top nav
+""")
 
 # Info
 st.sidebar.header("ℹ️ About")
@@ -299,6 +328,28 @@ else:
 
 st.markdown("---")
 
+
+# ============================================================================
+# LLM BUDGET STATUS
+# ============================================================================
+
+st.header("💰 LLM Budget Status")
+
+if BUDGET_AVAILABLE:
+    try:
+        budget = get_budget_manager().get_budget_status()
+        bc1, bc2, bc3, bc4 = st.columns(4)
+        bc1.metric("Calls (this min)",
+                   f"{budget.get('calls_this_minute', 0)}/{budget.get('calls_budget', 0)}")
+        bc2.metric("Calls remaining", budget.get("calls_remaining", 0))
+        bc3.metric("Tokens used (min)", f"{budget.get('tokens_this_minute', 0):,}")
+        bc4.metric("Est. cost (USD)", f"${budget.get('total_cost_estimate_usd', 0):.4f}")
+    except Exception as _be:
+        st.caption(f"Budget data unavailable: {_be}")
+else:
+    st.info("LLM budget manager not initialised.")
+
+st.markdown("---")
 
 # ============================================================================
 # THREAT FEED
