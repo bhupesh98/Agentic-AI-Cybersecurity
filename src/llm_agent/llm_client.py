@@ -161,15 +161,62 @@ class CyberSecurityLLM:
                 "recommended_actions": []
             }
 
+        # --- Phase 3: Sanitize inputs to prevent prompt injection ---
+        try:
+            from src.llm_agent.prompt_sanitizer import get_prompt_sanitizer
+            sanitizer = get_prompt_sanitizer()
+            threat_data = sanitizer.sanitize_dict(threat_data, "threat_data")
+        except Exception:
+            pass  # sanitizer unavailable, proceed with raw data
+
+        # --- Phase 3: Check LLM budget before invoking ---
+        try:
+            from src.llm_agent.llm_budget_manager import get_budget_manager
+            budget_mgr = get_budget_manager()
+            _ctx = context or {}
+            _sev = str(_ctx.get("severity", "MEDIUM")).upper()
+            _priority = _sev if _sev in ("CRITICAL", "HIGH", "MEDIUM", "LOW") else "MEDIUM"
+            if not budget_mgr.request_llm_call(_priority, estimated_tokens=400):
+                return {
+                    "analysis": "Skipped \u2014 LLM budget exhausted for this cycle",
+                    "reasoning": f"Low-priority ('{_priority}') call denied by LLMBudgetManager",
+                    "severity": _sev.lower(),
+                    "confidence": 0.0,
+                    "recommended_actions": [],
+                    "context_factors": ["budget_limited"],
+                }
+        except Exception:
+            pass  # budget manager unavailable, proceed
+
         # Start timing for metrics (Week 1 Day 2 integration)
         start_time = datetime.utcnow()
 
         try:
-            # Build the prompt
+            # Build the prompt — prefer compressed form (Phase 3)
             system_prompt = self._build_system_prompt()
-            user_prompt = self._build_threat_analysis_prompt(
-                threat_data, ml_predictions, context
-            )
+            try:
+                from src.llm_agent.context_compression_engine import get_compression_engine
+                engine = get_compression_engine()
+                first_pred = (
+                    ml_predictions[0].to_dict()
+                    if ml_predictions and hasattr(ml_predictions[0], "to_dict")
+                    else (ml_predictions[0] if ml_predictions else {})
+                )
+                _ctx2 = context or {}
+                context_flags = list(_ctx2.get("flags", []))
+                memory_hits = list(_ctx2.get("memory_contexts", []))
+                compressed = engine.compress(
+                    threat_data, first_pred, context_flags, memory_hits
+                )
+                user_prompt = (
+                    "Analyze this threat and respond in the JSON format specified:\n\n"
+                    + compressed
+                )
+            except Exception:
+                # Fall back to original verbose prompt
+                user_prompt = self._build_threat_analysis_prompt(
+                    threat_data, ml_predictions, context
+                )
 
             # Create messages
             messages = [
