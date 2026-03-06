@@ -304,6 +304,18 @@ class FirewallManager:
             self.logger.error(msg)
             return (False, msg)
 
+        # Simulation mode — log what would happen, skip actual OS call
+        try:
+            from src.simulation.simulation_manager import is_simulation, log_simulation_action
+            if is_simulation():
+                sim_msg = log_simulation_action(
+                    f"Would block IP {ip_address}",
+                    f"reason={reason}, duration={duration_minutes}min"
+                )
+                return (True, sim_msg)
+        except ImportError:
+            pass
+
         # Calculate expiration
         is_permanent = (duration_minutes == 0)
         blocked_at = datetime.utcnow()

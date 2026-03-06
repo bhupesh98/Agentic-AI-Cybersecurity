@@ -54,15 +54,22 @@ else:
 # CONFIGURATION
 # ============================================================================
 
-# Email configuration (loaded from .env file)
-SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USERNAME)
-
-# Slack configuration (loaded from .env file)
-SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
+# Configuration — prefer Settings singleton, fall back to os.getenv
+try:
+    from config import settings as _settings
+    SMTP_SERVER: str = _settings.SMTP_SERVER
+    SMTP_PORT: int = _settings.SMTP_PORT
+    SMTP_USERNAME: str = _settings.SMTP_USERNAME
+    SMTP_PASSWORD: str = _settings.SMTP_PASSWORD
+    SMTP_FROM: str = _settings.SMTP_FROM or _settings.SMTP_USERNAME
+    SLACK_WEBHOOK_URL: str = _settings.SLACK_WEBHOOK_URL
+except Exception:
+    SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+    SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USERNAME)
+    SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
 
 # Alert throttling (max alerts per hour)
 MAX_ALERTS_PER_HOUR = 20
@@ -381,6 +388,18 @@ class AlertManager:
             self.logger.warning(f"⚠️  {throttle_msg}")
             return (False, throttle_msg)
 
+        # Simulation mode — log what would happen, skip real SMTP
+        try:
+            from src.simulation.simulation_manager import is_simulation, log_simulation_action
+            if is_simulation():
+                sim_msg = log_simulation_action(
+                    f"Would send email to {', '.join(recipients)}",
+                    f"severity={severity}, title={title}"
+                )
+                return (True, sim_msg)
+        except ImportError:
+            pass
+
         try:
             # Create message
             msg = MIMEMultipart('alternative')
@@ -443,6 +462,18 @@ class AlertManager:
         if not can_send:
             self.logger.warning(f"⚠️  {throttle_msg}")
             return (False, throttle_msg)
+
+        # Simulation mode — log what would happen, skip real Slack POST
+        try:
+            from src.simulation.simulation_manager import is_simulation, log_simulation_action
+            if is_simulation():
+                sim_msg = log_simulation_action(
+                    f"Would send Slack alert: [{severity}] {title}",
+                    "channel=webhook"
+                )
+                return (True, sim_msg)
+        except ImportError:
+            pass
 
         try:
             # Generate payload

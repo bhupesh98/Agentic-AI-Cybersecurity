@@ -179,6 +179,13 @@ class AgentState(TypedDict):
     # ========== METRICS ==========
     metrics: Dict[str, Any]  # Performance and Agentic AI metrics
 
+    # ========== MULTI-AGENT ARCHITECTURE (Phase 2 refactor) ==========
+    threat_intel_context: Dict[str, Any]   # enrichment from ThreatIntelAgent
+    investigation_report: Dict[str, Any]   # structured report from InvestigationAgent
+    decision_trace: List[Dict[str, Any]]   # accumulated per-session trace entries
+    governance_decisions: List[Dict[str, Any]]  # approval/override records
+    playbook: Dict[str, Any]               # dynamic playbook from ResponseAgent
+
 
 # ============================================================================
 # HELPER FUNCTIONS
@@ -212,7 +219,13 @@ def create_initial_state(session_id: str) -> AgentState:
         response_plan={},
         actions_taken=[],
         context={},
-        metrics={}
+        metrics={},
+        # Multi-agent fields
+        threat_intel_context={},
+        investigation_report={},
+        decision_trace=[],
+        governance_decisions=[],
+        playbook={},
     )
 
 

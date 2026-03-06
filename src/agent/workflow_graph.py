@@ -804,6 +804,54 @@ def create_workflow() -> StateGraph:
 
 
 # ============================================================================
+# MULTI-AGENT WORKFLOW (Phase 2 refactor)
+# ============================================================================
+
+def create_multi_agent_workflow() -> StateGraph:
+    """
+    Create the multi-agent LangGraph workflow.
+
+    Flow:
+        ingest → DetectionAgent → ThreatIntelAgent → InvestigationAgent
+               → GovernanceAgent → ResponseAgent → END
+
+    MemoryAgent is used internally by InvestigationAgent and ResponseAgent.
+    create_workflow() is preserved for backward compatibility.
+    """
+    from src.agents import (
+        DetectionAgent, ThreatIntelAgent, InvestigationAgent,
+        GovernanceAgent, ResponseAgent,
+    )
+    from src.tracing.decision_trace_manager import DecisionTraceManager
+
+    trace_manager = DecisionTraceManager()
+    detection_agent = DetectionAgent(trace_manager=trace_manager)
+    threat_intel_agent = ThreatIntelAgent(trace_manager=trace_manager)
+    investigation_agent = InvestigationAgent(trace_manager=trace_manager)
+    governance_agent = GovernanceAgent(trace_manager=trace_manager)
+    response_agent = ResponseAgent(trace_manager=trace_manager)
+
+    workflow = StateGraph(AgentState)
+    workflow.add_node("ingest", ingest_node)
+    workflow.add_node("detect", detection_agent.process)
+    workflow.add_node("threat_intel", threat_intel_agent.process)
+    workflow.add_node("investigate", investigation_agent.process)
+    workflow.add_node("govern", governance_agent.process)
+    workflow.add_node("respond", response_agent.process)
+
+    workflow.set_entry_point("ingest")
+    workflow.add_edge("ingest", "detect")
+    workflow.add_edge("detect", "threat_intel")
+    workflow.add_edge("threat_intel", "investigate")
+    workflow.add_edge("investigate", "govern")
+    workflow.add_edge("govern", "respond")
+    workflow.add_edge("respond", END)
+
+    app = workflow.compile(checkpointer=MemorySaver())
+    return app
+
+
+# ============================================================================
 # MAIN EXECUTION FUNCTION
 # ============================================================================
 

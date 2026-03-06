@@ -185,6 +185,7 @@ class ActionResult:
     output: str = ""
     error: Optional[str] = None
     verification_passed: bool = False
+    simulated: bool = False
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -196,6 +197,7 @@ class ActionResult:
             'output': self.output,
             'error': self.error,
             'verification_passed': self.verification_passed,
+            'simulated': self.simulated,
             'timestamp': self.timestamp.isoformat()
         }
 
@@ -397,6 +399,31 @@ class ActionExecutor:
 
         self.logger.info(
             f"▶️  Executing: {action.action_type.value} for {action.target}")
+
+        # Simulation mode guard — skip real execution when SIMULATION_MODE=True
+        try:
+            from src.simulation.simulation_manager import is_simulation, log_simulation_action
+            if is_simulation():
+                sim_msg = log_simulation_action(
+                    f"Execute {action.action_type.value}",
+                    f"target={action.target}"
+                )
+                result = ActionResult(
+                    action_id=action.action_id,
+                    success=True,
+                    execution_time_ms=0.1,
+                    output=sim_msg,
+                    simulated=True,
+                    verification_passed=True,
+                )
+                action.status = ActionStatus.COMPLETED
+                action.completed_at = datetime.utcnow()
+                self._update_action_status(action, result)
+                self.stats['successful'] += 1
+                self.stats['total_executed'] += 1
+                return result
+        except ImportError:
+            pass  # simulation module not available, proceed normally
 
         try:
             # Get handler for this action type
