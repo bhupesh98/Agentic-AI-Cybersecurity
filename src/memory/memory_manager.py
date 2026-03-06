@@ -39,6 +39,13 @@ from .models import IncidentRecord, IPReputation, ThreatPattern, MemoryStats
 
 logger = logging.getLogger(__name__)
 
+# Redis for hot-cache (optional — falls back to SQLite-only if unavailable)
+try:
+    import redis as _redis_lib
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
+
 
 def _normalize_timestamp(timestamp_str: str) -> str:
     """
@@ -115,6 +122,12 @@ class MemoryManager:
         
         self.db_path = db_path
         self.faiss_index_path = faiss_index_path
+
+        # ── Redis hot cache (optional) ────────────────────────────────────────
+        self._redis: "Any | None" = None
+        self._redis_ttl = 3600  # seconds
+        if REDIS_AVAILABLE:
+            self._init_redis()
         
         # Initialize database
         self._init_database()
@@ -126,7 +139,26 @@ class MemoryManager:
             self._init_faiss()
         
         logger.info("✅ Memory Manager initialized successfully")
-    
+
+    def _init_redis(self) -> None:
+        """Connect to Redis for hot-cache — silently skipped if unavailable."""
+        try:
+            from config import settings as _s  # type: ignore
+            url = _s.REDIS_URL or ""
+        except Exception:
+            url = os.getenv("REDIS_URL", "")
+        if not url:
+            return
+        try:
+            self._redis = _redis_lib.from_url(  # type: ignore[attr-defined]
+                url, socket_connect_timeout=2, socket_timeout=2, decode_responses=True
+            )
+            self._redis.ping()
+            logger.info("✅ Redis hot cache connected: %s", url)
+        except Exception as exc:
+            logger.warning("Redis unavailable — using SQLite-only mode: %s", exc)
+            self._redis = None
+
     def _init_database(self):
         """Initialize SQLite database with schema."""
         conn = sqlite3.connect(self.db_path)
@@ -251,6 +283,29 @@ class MemoryManager:
             self._create_correlations(cursor, incident)
 
             conn.commit()
+
+            # Write lightweight record to Redis hot cache
+            if self._redis is not None:
+                try:
+                    cache_key = f"incident:{incident.incident_id}"
+                    self._redis.setex(
+                        cache_key,
+                        self._redis_ttl,
+                        json.dumps({
+                            "incident_id": incident.incident_id,
+                            "src_ip": incident.src_ip,
+                            "severity": incident.llm_severity,
+                            "threat_type": (incident.llm_analysis or "")[:120],
+                            "detected_at": str(incident.timestamp),
+                        }),
+                    )
+                    # Track per-IP recent incident list
+                    ip_key = f"ip_incidents:{incident.src_ip}"
+                    self._redis.lpush(ip_key, incident.incident_id)
+                    self._redis.expire(ip_key, self._redis_ttl)
+                    self._redis.ltrim(ip_key, 0, 49)  # keep last 50 per IP
+                except Exception as _re:
+                    logger.debug("Redis write skipped: %s", _re)
 
             # Track performance
             elapsed = (datetime.utcnow() - start_time).total_seconds() * 1000
@@ -433,7 +488,7 @@ class MemoryManager:
         
         Queries:
         - Similar past incidents (FAISS)
-        - IP reputation
+        - IP reputation (Redis hot cache first, then SQLite)
         - Related incidents
         - Attack patterns
         
@@ -448,6 +503,26 @@ class MemoryManager:
             current_src_ip=incident.src_ip,
             current_dst_ip=incident.dst_ip
         )
+
+        # ── Redis hot cache: recent incidents for this IP ─────────────────────
+        if self._redis is not None:
+            try:
+                ip_key = f"ip_incidents:{incident.src_ip}"
+                recent_ids = self._redis.lrange(ip_key, 0, 4)  # up to 5 recent
+                if recent_ids:
+                    cached = []
+                    for inc_id in recent_ids:
+                        raw = self._redis.get(f"incident:{inc_id}")
+                        if raw:
+                            cached.append(json.loads(raw))
+                    if cached:
+                        context.similar_incidents = cached
+                        logger.debug(
+                            "Redis cache hit: %d recent incidents for %s",
+                            len(cached), incident.src_ip,
+                        )
+            except Exception as _re:
+                logger.debug("Redis read skipped: %s", _re)
 
         try:
             # Query similar incidents using FAISS

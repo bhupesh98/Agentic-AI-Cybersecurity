@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-detection
+  namespace: soc-platform
+  labels:
+    app: ml-detection
+    component: agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ml-detection
+  template:
+    metadata:
+      labels:
+        app: ml-detection
+        component: agent
+    spec:
+      containers:
+        - name: ml-detection
+          image: agentic-ai-soc:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SERVICE_TYPE
+              value: ml-detection
+          envFrom:
+            - configMapRef:
+                name: soc-config
+            - secretRef:
+                name: soc-secrets
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+          volumeMounts:
+            - name: models
+              mountPath: /app/models
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: soc-models-pvc
+        - name: data
+          persistentVolumeClaim:
+            claimName: soc-data-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-reasoning
+  namespace: soc-platform
+  labels:
+    app: llm-reasoning
+    component: agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llm-reasoning
+  template:
+    metadata:
+      labels:
+        app: llm-reasoning
+        component: agent
+    spec:
+      containers:
+        - name: llm-reasoning
+          image: agentic-ai-soc:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SERVICE_TYPE
+              value: llm-reasoning
+          envFrom:
+            - configMapRef:
+                name: soc-config
+            - secretRef:
+                name: soc-secrets
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: soc-data-pvc

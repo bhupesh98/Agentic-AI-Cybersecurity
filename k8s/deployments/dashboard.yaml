@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: soc-platform
+  labels:
+    app: dashboard
+    component: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+        component: frontend
+    spec:
+      containers:
+        - name: dashboard
+          image: agentic-ai-soc:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SERVICE_TYPE
+              value: dashboard
+          envFrom:
+            - configMapRef:
+                name: soc-config
+            - secretRef:
+                name: soc-secrets
+          ports:
+            - name: streamlit
+              containerPort: 8501
+          livenessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: 8501
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: 8501
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: soc-data-pvc
