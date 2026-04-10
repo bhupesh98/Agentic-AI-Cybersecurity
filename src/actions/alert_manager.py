@@ -64,7 +64,7 @@ try:
     SMTP_FROM: str = _settings.SMTP_FROM or _settings.SMTP_USERNAME
     SLACK_WEBHOOK_URL: str = _settings.SLACK_WEBHOOK_URL
 except Exception:
-    SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp-relay.brevo.com")
     SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
     SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
     SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")

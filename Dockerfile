@@ -25,12 +25,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /build
 
 # Copy dependency manifest first for layer caching
-COPY pyproject.toml ./
+COPY pyproject.toml README.md ./
 
 # Install uv (fast pip replacement), then all deps into /build/.venv
-RUN pip install --no-cache-dir uv==0.5.* && \
-    uv venv .venv && \
-    uv pip install --no-cache ".[api]"
+# Use BuildKit cache mounts so uv reuses download/build artifacts between builds.
+RUN --mount=type=cache,target=/root/.cache/pip \
+  --mount=type=cache,target=/root/.cache/uv \
+  pip install --no-cache-dir uv==0.11.* && \
+  uv venv .venv && \
+  uv pip install ".[api]"
 
 # ── Stage 2: runtime image ────────────────────────────────────────────────────
 FROM python:3.11-slim AS runtime

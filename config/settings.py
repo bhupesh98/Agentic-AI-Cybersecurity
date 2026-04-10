@@ -7,7 +7,7 @@ Import `settings` from this module — or from `config` — for access.
 Phase 1: Foundation — Feature 16 (config consolidation)
 """
 
-from pydantic import Field, field_validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -31,11 +31,11 @@ class Settings(BaseSettings):
     # NVIDIA NIM
     NVIDIA_API_KEY: str = ""
     NVIDIA_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
-    NVIDIA_MODEL: str = "meta/llama-3.1-70b-instruct"
+    NVIDIA_MODEL: str = "minimaxai/minimax-m2.7"
 
     # Google Gemini
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-1.5-flash"
+    GEMINI_MODEL: str = "gemini-flash-latest"
 
     # OpenAI
     OPENAI_API_KEY: str = ""
@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     BUDGET_MAX_LLM_CALLS_PER_MINUTE: int = 20
 
     # ── SMTP / Email ──────────────────────────────────────────────────────────
-    SMTP_SERVER: str = "smtp.gmail.com"
+    SMTP_SERVER: str = "smtp-relay.brevo.com"
     SMTP_PORT: int = 587
     SMTP_USERNAME: str = ""
     SMTP_PASSWORD: str = ""

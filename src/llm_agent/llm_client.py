@@ -43,7 +43,7 @@ except ImportError:
 
 _NVIDIA_DEFAULT_BASE_URL = "https://integrate.api.nvidia.com/v1"
 _NVIDIA_DEFAULT_MODEL = "meta/llama-3.1-70b-instruct"
-_GEMINI_DEFAULT_MODEL = "gemini-1.5-flash"
+_GEMINI_DEFAULT_MODEL = "gemini-flash-latest"
 _OPENAI_DEFAULT_MODEL = "gpt-4o-mini"
 
 

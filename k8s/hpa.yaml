@@ -1,5 +1,6 @@
 ---
 # HPA for the API deployment — scale on CPU usage
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.34.5/horizontalpodautoscaler.json
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -27,6 +28,7 @@ spec:
           averageUtilization: 80
 ---
 # HPA for the ML detection worker — scale on CPU
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.34.5/horizontalpodautoscaler.json
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:

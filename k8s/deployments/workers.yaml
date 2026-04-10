@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.34.5/deployment.json
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,18 +18,79 @@ spec:
         app: ml-detection
         component: agent
     spec:
+      initContainers:
+        - name: seed-models
+          image: localhost/agentic-ai-soc:local
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - >-
+              if [ -d /app/models ] && [ -z "$(ls -A /models 2>/dev/null)" ]; then
+                cp -R /app/models/* /models/;
+              fi
+          volumeMounts:
+            - name: models
+              mountPath: /models
       containers:
         - name: ml-detection
-          image: agentic-ai-soc:latest
+          image: localhost/agentic-ai-soc:local
           imagePullPolicy: IfNotPresent
           env:
             - name: SERVICE_TYPE
               value: ml-detection
+            - name: NVIDIA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: NVIDIA_API_KEY
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: GEMINI_API_KEY
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: OPENAI_API_KEY
+            - name: ABUSEIPDB_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: ABUSEIPDB_API_KEY
+            - name: VIRUSTOTAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: VIRUSTOTAL_API_KEY
+            - name: SHODAN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: SHODAN_API_KEY
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: SMTP_USERNAME
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: SMTP_PASSWORD
+            - name: SMTP_FROM
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: SMTP_FROM
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: SLACK_WEBHOOK_URL
           envFrom:
             - configMapRef:
                 name: soc-config
-            - secretRef:
-                name: soc-secrets
           resources:
             requests:
               cpu: "500m"
@@ -49,6 +111,7 @@ spec:
           persistentVolumeClaim:
             claimName: soc-data-pvc
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.34.5/deployment.json
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -70,16 +133,64 @@ spec:
     spec:
       containers:
         - name: llm-reasoning
-          image: agentic-ai-soc:latest
+          image: localhost/agentic-ai-soc:local
           imagePullPolicy: IfNotPresent
           env:
             - name: SERVICE_TYPE
               value: llm-reasoning
+            - name: NVIDIA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: NVIDIA_API_KEY
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: GEMINI_API_KEY
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: OPENAI_API_KEY
+            - name: ABUSEIPDB_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: ABUSEIPDB_API_KEY
+            - name: VIRUSTOTAL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: VIRUSTOTAL_API_KEY
+            - name: SHODAN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: SHODAN_API_KEY
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: SMTP_USERNAME
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: SMTP_PASSWORD
+            - name: SMTP_FROM
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: SMTP_FROM
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: soc-secrets
+                  key: SLACK_WEBHOOK_URL
           envFrom:
             - configMapRef:
                 name: soc-config
-            - secretRef:
-                name: soc-secrets
           resources:
             requests:
               cpu: "250m"
