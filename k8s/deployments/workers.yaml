@@ -20,7 +20,7 @@ spec:
     spec:
       initContainers:
         - name: seed-models
-          image: localhost/agentic-ai-soc:local
+          image: localhost/agentic-ai-soc:latest
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c"]
           args:
@@ -33,7 +33,7 @@ spec:
               mountPath: /models
       containers:
         - name: ml-detection
-          image: localhost/agentic-ai-soc:local
+          image: localhost/agentic-ai-soc:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: SERVICE_TYPE
@@ -133,7 +133,7 @@ spec:
     spec:
       containers:
         - name: llm-reasoning
-          image: localhost/agentic-ai-soc:local
+          image: localhost/agentic-ai-soc:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: SERVICE_TYPE

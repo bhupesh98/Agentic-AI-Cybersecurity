@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 NAMESPACE="soc-platform"
-IMAGE_NAME="${IMAGE_NAME:-localhost/agentic-ai-soc:local}"
+IMAGE_NAME="${IMAGE_NAME:-localhost/agentic-ai-soc:latest}"
 IMAGE_TAR="${IMAGE_TAR:-$HOME/agentic-ai-soc.tar}"
 WAIT_TIMEOUT="${WAIT_TIMEOUT:-60s}"
 
@@ -132,9 +132,11 @@ main() {
 	log "Applying autoscalers"
 	kubectl apply -f "${ROOT_DIR}/k8s/hpa.yaml"
 
-	log "Waiting for pods to be ready (timeout: ${WAIT_TIMEOUT})"
+	log "Waiting for deployments (timeout: ${WAIT_TIMEOUT})"
 	kubectl -n "${NAMESPACE}" get pods
-	kubectl -n "${NAMESPACE}" wait --for=condition=Ready pods --all --timeout="${WAIT_TIMEOUT}"
+	for deploy in redis kafka orchestrator api dashboard; do
+		kubectl -n "${NAMESPACE}" rollout status "deployment/${deploy}" --timeout="${WAIT_TIMEOUT}"
+	done
 
 	log "Done. Services are deployed to namespace: ${NAMESPACE}"
 	cat <<EOF

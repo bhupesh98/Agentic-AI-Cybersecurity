@@ -47,26 +47,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: zookeeper
-  namespace: soc-platform
-spec:
-  selector:
-    app: zookeeper
-  ports:
-    - port: 2181
-      targetPort: 2181
-  type: ClusterIP
----
-# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.34.5/service.json
-apiVersion: v1
-kind: Service
-metadata:
   name: kafka
   namespace: soc-platform
 spec:
   selector:
     app: kafka
   ports:
-    - port: 9092
+    - name: broker
+      port: 9092
       targetPort: 9092
+    - name: controller
+      port: 9093
+      targetPort: 9093
   type: ClusterIP

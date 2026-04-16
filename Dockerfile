@@ -22,18 +22,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libpcap-dev \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /build
+WORKDIR /app
 
 # Copy dependency manifest first for layer caching
 COPY pyproject.toml README.md ./
 
-# Install uv (fast pip replacement), then all deps into /build/.venv
+# Install uv (fast pip replacement), then all deps into /app/.venv
 # Use BuildKit cache mounts so uv reuses download/build artifacts between builds.
 RUN --mount=type=cache,target=/root/.cache/pip \
   --mount=type=cache,target=/root/.cache/uv \
   pip install --no-cache-dir uv==0.11.* && \
   uv venv .venv && \
-  uv pip install ".[api]"
+  uv pip install ".[api]" --link-mode=copy
 
 # ── Stage 2: runtime image ────────────────────────────────────────────────────
 FROM python:3.11-slim AS runtime
@@ -49,7 +49,7 @@ RUN useradd --create-home --shell /bin/bash appuser
 WORKDIR /app
 
 # Copy installed packages from builder
-COPY --from=builder /build/.venv /app/.venv
+COPY --from=builder /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy application code

@@ -20,8 +20,16 @@ spec:
     spec:
       containers:
         - name: dashboard
-          image: localhost/agentic-ai-soc:local
+          image: localhost/agentic-ai-soc:latest
           imagePullPolicy: IfNotPresent
+          command: ["/app/.venv/bin/python"]
+          args:
+            - "-m"
+            - "streamlit"
+            - "run"
+            - "src/dashboard/live_dashboard.py"
+            - "--server.port=8501"
+            - "--server.address=0.0.0.0"
           env:
             - name: SERVICE_TYPE
               value: dashboard
