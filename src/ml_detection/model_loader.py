@@ -16,6 +16,7 @@ import numpy as np
 from pathlib import Path
 from typing import List, Dict, Any
 import logging
+import warnings
 
 
 # Setup logging
@@ -67,7 +68,7 @@ class MLModelLoader:
             # Load Random Forest
             rf_path = self.models_dir / "rf_model_binary.pkl"
             if rf_path.exists():
-                self.rf_model = joblib.load(rf_path)
+                self.rf_model = self._load_pickle_quietly(rf_path)
                 self._patch_sklearn_compat(self.rf_model)
                 logger.info("✅ Random Forest model loaded")
             else:
@@ -77,7 +78,7 @@ class MLModelLoader:
             # Load XGBoost
             xgb_path = self.models_dir / "xgb_model_binary.pkl"
             if xgb_path.exists():
-                self.xgb_model = joblib.load(xgb_path)
+                self.xgb_model = self._load_pickle_quietly(xgb_path)
                 logger.info("✅ XGBoost model loaded")
             else:
                 logger.warning(f"⚠️  XGBoost model not found at: {xgb_path}")
@@ -85,7 +86,7 @@ class MLModelLoader:
             # Load Scaler
             scaler_path = self.models_dir / "scaler_binary.pkl"
             if scaler_path.exists():
-                self.scaler = joblib.load(scaler_path)
+                self.scaler = self._load_pickle_quietly(scaler_path)
                 logger.info("✅ Scaler loaded")
             else:
                 logger.warning(f"⚠️  Scaler not found at: {scaler_path}")
@@ -93,7 +94,7 @@ class MLModelLoader:
             # Load Label Encoder
             encoder_path = self.models_dir / "label_encoder_binary.pkl"
             if encoder_path.exists():
-                self.label_encoder = joblib.load(encoder_path)
+                self.label_encoder = self._load_pickle_quietly(encoder_path)
                 logger.info("✅ Label Encoder loaded")
             else:
                 logger.warning(
@@ -116,6 +117,20 @@ class MLModelLoader:
             logger.error(f"❌ Error loading models: {str(e)}")
             self.models_loaded = False
             return False
+
+    @staticmethod
+    def _load_pickle_quietly(path: Path):
+        """Load legacy model pickles while suppressing known compatibility noise."""
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message="Trying to unpickle estimator .* from version .*",
+            )
+            warnings.filterwarnings(
+                "ignore",
+                message=".*If you are loading a serialized model.*",
+            )
+            return joblib.load(path)
 
     def _patch_sklearn_compat(self, forest_model) -> None:
         """

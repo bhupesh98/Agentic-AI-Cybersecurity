@@ -9,6 +9,7 @@ Results are persisted to SQLite (data/correlations/attack_chains.db).
 """
 
 import json
+import hashlib
 import logging
 import sqlite3
 import uuid
@@ -39,15 +40,15 @@ STAGE_ORDER: Dict[str, int] = {
 # Attack-type keyword → MITRE stage
 _STAGE_KEYWORD_MAP: List[tuple] = [
     (["SCAN", "RECON", "PROBE", "DISCOVERY"], "RECONNAISSANCE"),
-    (["BRUTE", "AUTH", "LOGIN", "SSH", "FTP", "TELNET", "RDP_LOGIN"], "INITIAL_ACCESS"),
+    (["INITIAL_ACCESS", "INITIAL ACCESS", "BRUTE", "AUTH", "LOGIN", "SSH", "FTP", "TELNET", "RDP_LOGIN"], "INITIAL_ACCESS"),
     (["EXEC", "SHELL", "CMD", "COMMAND_INJECTION", "RCE"], "EXECUTION"),
     (["BACKDOOR", "PERSISTENCE", "CRON", "STARTUP", "REGISTRY"], "PERSISTENCE"),
     (["PRIVILEGE", "ESCALAT", "SUDO", "ROOT", "UAC"], "PRIVILEGE_ESCALATION"),
-    (["EVASION", "OBFUSC", "DISABLE_AV", "CLEAR_LOG"], "DEFENSE_EVASION"),
+    (["DEFENSE EVASION", "EVASION", "OBFUSC", "DISABLE_AV", "CLEAR_LOG"], "DEFENSE_EVASION"),
     (["CREDENTIAL", "PASS_HASH", "KERBEROAST", "MIMIKATZ"], "CREDENTIAL_ACCESS"),
     (["LATERAL", "PIVOT", "RDP", "SMB", "WMIC", "PSEXEC"], "LATERAL_MOVEMENT"),
     (["COLLECT", "STAGING", "SCREEN", "KEYLOG"], "COLLECTION"),
-    (["C2", "C&C", "BEACON", "COMMAND_AND_CONTROL", "COVERT_CHANNEL"], "COMMAND_AND_CONTROL"),
+    (["C2", "C&C", "BEACON", "COMMAND_AND_CONTROL", "COMMAND AND CONTROL", "COVERT_CHANNEL"], "COMMAND_AND_CONTROL"),
     (["EXFIL", "DATA_THEFT", "TRANSFER", "DNS_TUNNEL"], "DATA_EXFILTRATION"),
     (["RANSOMWARE", "WIPER", "DOS", "DDOS", "DENIAL"], "IMPACT"),
 ]
@@ -229,8 +230,11 @@ class IncidentCorrelationEngine:
             sn.split("_")[0] for sn in unique_stage_names[:3]
         )
 
+        fingerprint = "|".join([src_ip] + [s.incident_id for s in stages])
+        chain_suffix = hashlib.sha1(fingerprint.encode("utf-8")).hexdigest()[:8]
+
         return AttackChain(
-            chain_id=f"chain-{uuid.uuid4().hex[:8]}",
+            chain_id=f"chain-{chain_suffix}",
             stages=stages,
             confidence=confidence,
             campaign_name=f"Campaign-{src_ip}-{stage_label}",

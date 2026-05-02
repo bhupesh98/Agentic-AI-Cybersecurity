@@ -6,8 +6,7 @@ OpenAI. The active provider is selected automatically from available API
 keys (NVIDIA_API_KEY → GEMINI_API_KEY → OPENAI_API_KEY) or explicitly
 via the LLM_PROVIDER environment variable.
 
-Author: Abhinav
-Date: November 2025
+
 """
 
 from langchain_core.messages import HumanMessage, SystemMessage

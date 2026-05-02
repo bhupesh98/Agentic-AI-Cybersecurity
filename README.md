@@ -166,14 +166,6 @@ This system implements 7 Agentic AI principles (Self-Learning, Contextual Awaren
 
 ## Requirements
 
-- Python 3.8+
-- OpenAI API key (for LLM analysis)
-- Required packages: pandas, numpy, scikit-learn, xgboost, tensorflow, langgraph, faiss, matplotlib, seaborn
-
----
-
-## Author
-
-Rishabh
-Date: December 2025
-
+- Use uv
+- uv sync
+- uv pip install .[api]

@@ -22,8 +22,26 @@ st.subheader("Agent Autonomy Index")
 def compute_autonomy():
     try:
         from src.metrics.autonomy_score import AutonomyScoreCalculator  # type: ignore
+        from src.dashboard.dashboard_data_loader import get_data_loader  # type: ignore
+
         calc = AutonomyScoreCalculator()
-        return calc.get_current_scores(), calc.get_trend_data(limit=20)
+        loader = get_data_loader()
+        latest = loader.get_latest_metrics_summary()
+        if latest:
+            principles = {
+                name.lower().replace(" & ", "_").replace("-", "_").replace(" ", "_"): data.get("score", 0.0)
+                for name, data in latest.get("principles", {}).items()
+            }
+            scores = {
+                "agent_autonomy_index": latest.get("overall_score", 0.0),
+                "interpretation": "Latest persisted orchestrator metrics",
+                "principles": principles,
+                "session_id": latest.get("session_id", ""),
+                "timestamp": latest.get("timestamp", ""),
+            }
+        else:
+            scores = calc.get_current_scores()
+        return scores, calc.get_trend_data(limit=20)
     except Exception:
         return None, []
 
@@ -60,7 +78,7 @@ if scores:
             )
         )
         fig_gauge.update_layout(height=260, margin=dict(l=10, r=10, t=30, b=10))
-        st.plotly_chart(fig_gauge, use_container_width=True)
+        st.plotly_chart(fig_gauge, width='stretch')
         st.caption(interp)
 
     with col2:
@@ -80,7 +98,7 @@ if scores:
         fig_bar.update_layout(height=260, showlegend=False,
                               margin=dict(l=10, r=10, t=40, b=10),
                               coloraxis_showscale=False)
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, width='stretch')
 
     # Trend chart
     if trend:
@@ -93,7 +111,7 @@ if scores:
                 labels={"score_pct": "Score (%)", "timestamp": "Time"},
             )
             fig_trend.update_layout(height=220, margin=dict(l=10, r=10, t=40, b=10))
-            st.plotly_chart(fig_trend, use_container_width=True)
+            st.plotly_chart(fig_trend, width='stretch')
 else:
     st.info("Autonomy metrics not available yet. Run the agent pipeline first.")
 
@@ -152,7 +170,7 @@ fig_sankey = go.Figure(
 )
 fig_sankey.update_layout(title_text="Detection Pipeline Flow", height=320,
                           margin=dict(l=10, r=10, t=40, b=10))
-st.plotly_chart(fig_sankey, use_container_width=True)
+st.plotly_chart(fig_sankey, width='stretch')
 
 st.markdown("---")
 
@@ -190,6 +208,6 @@ def load_traces(session_id: str, limit: int = 50):
 
 traces = load_traces(session_input)
 if traces:
-    st.dataframe(pd.DataFrame(traces), use_container_width=True, height=320)
+    st.dataframe(pd.DataFrame(traces), width='stretch', height=320)
 else:
     st.info("No decision traces found. Traces are recorded during multi-agent workflow runs.")

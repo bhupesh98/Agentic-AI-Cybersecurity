@@ -8,8 +8,7 @@ This module enhances the existing workflow with:
 4. Action verification
 5. Metrics tracking for autonomous response
 
-Author: Abhinav
-Date: November 2025
+
 """
 
 import uuid

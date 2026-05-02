@@ -70,7 +70,6 @@ The framework evaluates detection quality based on when detection occurs:
 ### Running All Scenarios
 
 ```bash
-cd /Users/rishabh/Documents/Documents/Agentic-AI-Cybersecurity
 sudo python3 test_comprehensive_apt_scenarios.py
 ```
 
@@ -223,8 +222,4 @@ Potential improvements:
 - MITRE ATT&CK Framework: https://attack.mitre.org/
 - APT Groups: https://attack.mitre.org/groups/
 - Detection Quality Standards: NIST Cybersecurity Framework
-
-## Author
-
-Abhinav - December 2025
 

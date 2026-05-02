@@ -4,8 +4,7 @@ Agent State Management for Agentic Cybersecurity System.
 This module defines the state schema used by LangGraph to pass data between nodes.
 Based on Phase 1 requirements from immediate-guide.txt.
 
-Author: Abhinav
-Date: November 2025
+
 """
 
 from typing import TypedDict, List, Dict, Any, Optional

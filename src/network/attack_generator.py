@@ -12,8 +12,7 @@ Attack Types:
 5. Data Exfiltration - Large outbound transfer
 
 Location: src/network/attack_generator.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 import sys

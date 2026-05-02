@@ -13,20 +13,9 @@ def dashboard_data() -> dict:
 
     # Recent incidents
     try:
-        import sqlite3
-        from src.memory import get_memory_manager  # type: ignore
+        from src.dashboard.dashboard_data_loader import get_data_loader  # type: ignore
 
-        memory = get_memory_manager()
-        conn = sqlite3.connect(memory.db_path)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT incident_id, src_ip, llm_severity, detected_at "
-            "FROM incidents ORDER BY detected_at DESC LIMIT 20"
-        )
-        rows = cursor.fetchall()
-        conn.close()
-        payload["recent_incidents"] = [dict(r) for r in rows]
+        payload["recent_incidents"] = get_data_loader().get_recent_threats(limit=20)
     except Exception as exc:
         payload["recent_incidents"] = []
         payload["incidents_error"] = str(exc)
@@ -59,3 +48,19 @@ def dashboard_data() -> dict:
         pass
 
     return payload
+
+
+@router.get("/incidents/{incident_id}/summary", tags=["Dashboard"])
+def incident_summary(incident_id: str) -> dict:
+    """Return an on-demand AI-style incident summary with reasoning and response."""
+    try:
+        from src.dashboard.dashboard_data_loader import get_data_loader  # type: ignore
+
+        summary = get_data_loader().get_incident_summary(incident_id)
+        if not summary:
+            raise HTTPException(status_code=404, detail="Incident not found")
+        return summary
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc

@@ -3,8 +3,7 @@ Schema Validator and Manager for Memory System.
 
 Uses schema_metadata.json to validate and manage database schema.
 
-Author: Abhinav
-Date: November 2025
+
 """
 
 import sqlite3

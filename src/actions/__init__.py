@@ -3,9 +3,6 @@ Actions Module - Autonomous Response System.
 
 Implements Phase 3 (Response Automation) of the Agentic AI Cybersecurity System.
 Provides the ACTION component of OODA loop (Observe-Orient-Decide-ACT).
-
-Author: Abhinav
-Date: November 2025
 """
 
 from .action_executor import (

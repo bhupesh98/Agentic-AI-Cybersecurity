@@ -4,8 +4,7 @@ Hybrid Memory Manager: SQLite + FAISS Vector Search.
 Combines structured relational storage with semantic similarity search
 for intelligent incident correlation and retrieval.
 
-Author: Abhinav
-Date: November 2025
+
 """
 
 import sqlite3

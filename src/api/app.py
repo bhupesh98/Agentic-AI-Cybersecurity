@@ -82,8 +82,8 @@ def ready() -> JSONResponse:
     except Exception as exc:
         checks["config"] = f"error: {exc}"
 
-    all_ok = all(v == "ok" for v in checks.values() if k != "simulation_mode" for k in [v])
-    status_code = 200 if checks.get("memory") == "ok" else 503
+    all_ok = all(v == "ok" for k, v in checks.items() if k != "simulation_mode")
+    status_code = 200 if all_ok else 503
     return JSONResponse(content={"status": "ready" if status_code == 200 else "not_ready",
                                   "checks": checks},
                         status_code=status_code)

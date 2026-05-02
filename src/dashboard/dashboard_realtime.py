@@ -8,8 +8,7 @@ Run from project root:
     streamlit run src/dashboard/dashboard_realtime.py --server.port 8501
 
 Location: src/dashboard/dashboard_realtime.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 # CRITICAL: Path setup MUST be done BEFORE any local imports

@@ -11,8 +11,7 @@ Real-time visualization of:
 Run with: streamlit run src/dashboard/live_dashboard.py
 
 Location: src/dashboard/live_dashboard.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 import streamlit as st
@@ -51,6 +50,12 @@ try:
     SIMULATION_AVAILABLE = True
 except ImportError:
     SIMULATION_AVAILABLE = False
+
+try:
+    from src.dashboard.dashboard_data_loader import get_data_loader
+    DASHBOARD_LOADER_AVAILABLE = True
+except ImportError:
+    DASHBOARD_LOADER_AVAILABLE = False
 
 
 # ============================================================================
@@ -137,6 +142,14 @@ def get_memory_statistics():
 
 def get_metrics_data():
     """Get metrics from metrics system."""
+    if DASHBOARD_LOADER_AVAILABLE:
+        try:
+            latest = get_data_loader().get_latest_metrics_summary()
+            if latest:
+                return latest
+        except Exception:
+            pass
+
     if not METRICS_AVAILABLE:
         return None
 
@@ -203,24 +216,6 @@ st.sidebar.markdown("""
 - **Attack Graphs** → ← use top nav
 - **Agent Insights** → ← use top nav
 - **System Metrics** → ← use top nav
-""")
-
-# Info
-st.sidebar.header("ℹ️ About")
-st.sidebar.info("""
-**Agentic AI Cybersecurity System**
-
-Research project by Abhinav
-IIIT Allahabad - 7th Semester
-
-Demonstrates 7 Agentic AI principles:
-1. Self-Learning
-2. Contextual Awareness
-3. Goal-Directed Behavior
-4. Tool Utilization
-5. Planning & Reasoning
-6. Memory Management
-7. Feedback Incorporation
 """)
 
 
@@ -322,7 +317,7 @@ if metrics:
                 }
             ))
             fig.update_layout(height=200, margin=dict(l=10, r=10, t=50, b=10))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
 else:
     st.info("No metrics data available yet. Run detection to generate metrics.")
 
@@ -358,52 +353,31 @@ st.markdown("---")
 st.header("🚨 Live Threat Feed")
 
 if memory_stats and memory_stats['Total Incidents'] > 0:
-    # Get recent incidents directly from memory database
-    if MEMORY_AVAILABLE:
+    if DASHBOARD_LOADER_AVAILABLE:
         try:
-            import sqlite3
-            memory = get_memory_manager()
-            conn = sqlite3.connect(memory.db_path)
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-
-            # Query recent incidents
-            cursor.execute("""
-                SELECT incident_id, src_ip, dst_ip, src_port, dst_port,
-                       protocol, llm_severity, llm_confidence, llm_analysis,
-                       detected_at, timestamp
-                FROM incidents
-                ORDER BY detected_at DESC
-                LIMIT 10
-            """)
-
-            recent_incidents = cursor.fetchall()
-            conn.close()
+            recent_incidents = get_data_loader().get_recent_threats(limit=10)
 
             for incident in recent_incidents:
-                severity = incident['llm_severity'].upper(
-                ) if incident['llm_severity'] else 'MEDIUM'
+                severity = incident.get('llm_severity', 'MEDIUM').upper()
 
                 if severity == 'CRITICAL':
                     css_class = "threat-critical"
-                    icon = "🔴"
                 elif severity == 'HIGH':
                     css_class = "threat-high"
-                    icon = "🟠"
                 else:
                     css_class = "threat-medium"
-                    icon = "🟡"
 
                 with st.container():
                     st.markdown(f"""
                     <div class="{css_class}">
-                        <strong>{icon} {severity} THREAT</strong><br/>
-                        <strong>Source:</strong> {incident['src_ip']}:{incident['src_port']} → 
-                        <strong>Destination:</strong> {incident['dst_ip']}:{incident['dst_port']}<br/>
-                        <strong>Time:</strong> {incident['detected_at']}<br/>
-                        <strong>ML Confidence:</strong> {incident['llm_confidence']:.1%} | 
+                        <strong>{severity} THREAT</strong><br/>
+                        <strong>Source:</strong> {incident.get('src_ip', 'unknown')}:{incident.get('src_port', 0)} → 
+                        <strong>Destination:</strong> {incident.get('dst_ip', 'unknown')}:{incident.get('dst_port', 0)}<br/>
+                        <strong>Type:</strong> {incident.get('attack_type', 'Suspicious Network Activity')}<br/>
+                        <strong>Time:</strong> {incident.get('detected_at', '')}<br/>
+                        <strong>Confidence:</strong> {float(incident.get('confidence_score') or 0):.1%} | 
                         <strong>LLM Severity:</strong> {severity}<br/>
-                        <strong>Analysis:</strong> {incident['llm_analysis'][:100]}...
+                        <strong>Analysis:</strong> {incident.get('llm_analysis', '')[:140]}...
                     </div>
                     """, unsafe_allow_html=True)
         except Exception as e:
@@ -453,7 +427,7 @@ if memory_stats:
             },
             title="Incidents by Severity"
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     with col2:
         st.subheader("Top Threat IPs")
@@ -480,7 +454,7 @@ if memory_stats:
                 color='Threat Score',
                 color_continuous_scale='Reds'
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.info("No threat IPs tracked yet.")
 
@@ -512,22 +486,27 @@ st.markdown("---")
 st.header("📈 Detection Timeline")
 
 if memory_stats and memory_stats['Total Incidents'] > 0:
-    # Create sample timeline data (would be real data in production)
-    timeline_data = {
-        'Time': pd.date_range(start=datetime.now() - timedelta(hours=1), periods=20, freq='3min'),
-        'Threats': [2, 1, 3, 0, 5, 2, 1, 4, 0, 2, 3, 1, 6, 2, 0, 3, 1, 4, 2, 1]
-    }
-    df_timeline = pd.DataFrame(timeline_data)
+    timestamps, counts = ([], [])
+    if DASHBOARD_LOADER_AVAILABLE:
+        timestamps, counts = get_data_loader().get_detection_timeline(minutes=24 * 60)
 
-    fig = px.line(
-        df_timeline,
-        x='Time',
-        y='Threats',
-        title="Threats Detected Over Time",
-        markers=True
-    )
-    fig.update_traces(line_color='red', marker=dict(size=8))
-    st.plotly_chart(fig, use_container_width=True)
+    df_timeline = pd.DataFrame({
+        'Time': pd.to_datetime(timestamps),
+        'Threats': counts,
+    })
+
+    if df_timeline.empty:
+        st.info("No detections in the selected recent window.")
+    else:
+        fig = px.line(
+            df_timeline,
+            x='Time',
+            y='Threats',
+            title="Threats Detected Over Time",
+            markers=True
+        )
+        fig.update_traces(line_color='red', marker=dict(size=8))
+        st.plotly_chart(fig, width='stretch')
 else:
     st.info("Detection timeline will appear here once threats are detected.")
 
@@ -539,16 +518,3 @@ else:
 if auto_refresh:
     time.sleep(refresh_interval)
     st.rerun()
-
-
-# ============================================================================
-# FOOTER
-# ============================================================================
-
-st.markdown("---")
-st.markdown("""
-<div style='text-align: center; color: gray;'>
-    <p>Agentic AI Cybersecurity System | IIIT Allahabad | Research Project by Abhinav</p>
-    <p>Real-time detection powered by ML Ensemble + LLM Reasoning + Memory Correlation</p>
-</div>
-""", unsafe_allow_html=True)

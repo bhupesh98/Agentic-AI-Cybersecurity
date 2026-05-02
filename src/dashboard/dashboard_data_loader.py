@@ -8,8 +8,7 @@ Reads data from:
 3. data/memory/incidents.db (threat history)
 
 Location: src/dashboard/dashboard_data_loader.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 import json
@@ -61,6 +60,8 @@ class DashboardDataLoader:
             try:
                 with open(self.dashboard_state_file, 'r') as f:
                     state = json.load(f)
+                if str(state.get('timestamp', '')).startswith('2025'):
+                    return None
                 return state
             except (json.JSONDecodeError, FileNotFoundError, PermissionError):
                 if attempt < 2:
@@ -138,46 +139,33 @@ class DashboardDataLoader:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
 
-            # First check what columns exist
-            cursor.execute("PRAGMA table_info(incidents)")
-            available_cols = [row[1] for row in cursor.fetchall()]
-
-            # Build column list based on what's available
-            columns = []
-            if 'incident_id' in available_cols:
-                columns.append('incident_id')
-            if 'src_ip' in available_cols:
-                columns.append('src_ip')
-            elif 'source_ip' in available_cols:
-                columns.append('source_ip as src_ip')
-
-            if 'dst_ip' in available_cols:
-                columns.append('dst_ip')
-            elif 'dest_ip' in available_cols or 'destination_ip' in available_cols:
-                columns.append('COALESCE(dest_ip, destination_ip) as dst_ip')
-
-            if 'src_port' in available_cols:
-                columns.append('src_port')
-            elif 'source_port' in available_cols:
-                columns.append('source_port as src_port')
-
-            if 'dst_port' in available_cols:
-                columns.append('dst_port')
-            elif 'dest_port' in available_cols or 'destination_port' in available_cols:
-                columns.append(
-                    'COALESCE(dest_port, destination_port) as dst_port')
-
-            # Add other columns
-            for col in ['protocol', 'ml_prediction', 'ml_confidence', 'llm_severity',
-                        'llm_analysis', 'context_flags', 'timestamp', 'detected_at']:
-                if col in available_cols:
-                    columns.append(col)
-
-            query = f"""
-                SELECT {', '.join(columns)}
+            query = """
+                SELECT
+                    incident_id AS incident_id,
+                    session_id AS session_id,
+                    flow_id AS flow_id,
+                    src_ip AS src_ip,
+                    dst_ip AS dst_ip,
+                    src_port AS src_port,
+                    dst_port AS dst_port,
+                    protocol AS protocol,
+                    ml_prediction AS ml_prediction,
+                    ml_confidence AS ml_confidence,
+                    ensemble_agreement AS ensemble_agreement,
+                    context_flags AS context_flags,
+                    suspicion_score AS suspicion_score,
+                    llm_severity AS llm_severity,
+                    llm_confidence AS llm_confidence,
+                    llm_analysis AS llm_analysis,
+                    llm_reasoning AS llm_reasoning,
+                    recommended_actions AS recommended_actions,
+                    response_plan AS response_plan,
+                    action_taken AS action_taken,
+                    notes AS notes,
+                    detected_at AS detected_at,
+                    timestamp AS timestamp
                 FROM incidents
-                WHERE ml_prediction = 'malicious'
-                ORDER BY detected_at DESC
+                ORDER BY COALESCE(detected_at, timestamp, created_at) DESC
                 LIMIT ?
             """
 
@@ -185,18 +173,33 @@ class DashboardDataLoader:
 
             threats = []
             for row in cursor.fetchall():
+                item = dict(row)
                 threats.append({
-                    'incident_id': row.get('incident_id', 'unknown'),
-                    'src_ip': row.get('src_ip', 'unknown'),
-                    'dst_ip': row.get('dst_ip', 'unknown'),
-                    'src_port': row.get('src_port', 0),
-                    'dst_port': row.get('dst_port', 0),
-                    'protocol': row.get('protocol', 'TCP'),
-                    'ml_confidence': row.get('ml_confidence', 0.0),
-                    'llm_severity': row.get('llm_severity') or 'MEDIUM',
-                    'llm_analysis': row.get('llm_analysis') or 'Malicious activity detected',
-                    'context_flags': row.get('context_flags') or '',
-                    'timestamp': row.get('detected_at') or row.get('timestamp', '')
+                    'incident_id': item.get('incident_id', 'unknown'),
+                    'session_id': item.get('session_id', ''),
+                    'flow_id': item.get('flow_id', ''),
+                    'src_ip': item.get('src_ip', 'unknown'),
+                    'dst_ip': item.get('dst_ip', 'unknown'),
+                    'src_port': item.get('src_port', 0),
+                    'dst_port': item.get('dst_port', 0),
+                    'protocol': item.get('protocol', 'TCP'),
+                    'ml_prediction': item.get('ml_prediction', 'unknown'),
+                    'ml_confidence': item.get('ml_confidence', 0.0),
+                    'ensemble_agreement': item.get('ensemble_agreement', 0.0),
+                    'llm_severity': (item.get('llm_severity') or 'MEDIUM').upper(),
+                    'severity': (item.get('llm_severity') or 'MEDIUM').upper(),
+                    'llm_confidence': item.get('llm_confidence', 0.0),
+                    'confidence_score': item.get('llm_confidence') or item.get('ml_confidence') or 0.0,
+                    'llm_analysis': item.get('llm_analysis') or 'Threat activity detected',
+                    'llm_reasoning': item.get('llm_reasoning') or '',
+                    'recommended_actions': self._loads_json(item.get('recommended_actions'), []),
+                    'response_plan': self._loads_json(item.get('response_plan'), item.get('response_plan') or ''),
+                    'attack_type': self._derive_attack_type(item),
+                    'context_flags': item.get('context_flags') or '',
+                    'response_taken': item.get('action_taken') or 'Pending',
+                    'notes': item.get('notes') or '',
+                    'timestamp': item.get('detected_at') or item.get('timestamp', ''),
+                    'detected_at': item.get('detected_at') or item.get('timestamp', ''),
                 })
 
             conn.close()
@@ -234,8 +237,58 @@ class DashboardDataLoader:
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
             tables = [row[0] for row in cursor.fetchall()]
 
-            # Try metric_summaries first (new schema)
-            if 'metric_summaries' in tables:
+            # Current schema
+            if 'metrics_summary' in tables:
+                cursor.execute("""
+                    SELECT session_id, timestamp, overall_agentic_score
+                    FROM metrics_summary
+                    ORDER BY timestamp DESC
+                    LIMIT 1
+                """)
+
+                row = cursor.fetchone()
+                if not row:
+                    conn.close()
+                    return None
+
+                session_id = row['session_id']
+                principles = {}
+
+                principle_queries = {
+                    'Self-Learning': ("self_learning_metrics", "learning_velocity"),
+                    'Contextual Awareness': ("contextual_awareness_metrics", "context_incorporation_rate"),
+                    'Goal-Directed Behavior': ("goal_directed_metrics", "goal_completion_rate"),
+                    'Tool Utilization': ("tool_utilization_metrics", "overall_effectiveness"),
+                    'Planning & Reasoning': ("planning_reasoning_metrics", "decision_quality_score"),
+                    'Memory Management': ("memory_management_metrics", "memory_utilization_rate"),
+                    'Feedback Incorporation': ("feedback_incorporation_metrics", "target"),
+                }
+
+                for name, (table, score_col) in principle_queries.items():
+                    if table not in tables:
+                        continue
+                    cursor.execute(
+                        f"SELECT * FROM {table} WHERE session_id = ? LIMIT 1",
+                        (session_id,),
+                    )
+                    p_row = cursor.fetchone()
+                    if not p_row:
+                        continue
+                    data = dict(p_row)
+                    principles[name] = {
+                        'score': float(data.get(score_col) or 0.0),
+                        'metrics': data,
+                    }
+
+                summary = {
+                    'session_id': session_id,
+                    'timestamp': row['timestamp'],
+                    'overall_score': row['overall_agentic_score'],
+                    'principles': principles
+                }
+
+            # Legacy schema
+            elif 'metric_summaries' in tables:
                 cursor.execute("""
                     SELECT session_id, timestamp, overall_agentic_score
                     FROM metric_summaries
@@ -529,6 +582,100 @@ class DashboardDataLoader:
             'metrics_db': self.metrics_db.exists(),
             'memory_db': self.memory_db.exists()
         }
+
+    def get_incident_summary(self, incident_id: str) -> Optional[Dict]:
+        """Return an on-demand investigation summary for one incident."""
+        threats = self.get_recent_threats(limit=1000)
+        incident = next((item for item in threats if item.get('incident_id') == incident_id), None)
+        if not incident:
+            return None
+
+        traces = []
+        try:
+            from src.tracing.decision_trace_manager import DecisionTraceManager
+            tm = DecisionTraceManager()
+            traces = [
+                entry.to_dict()
+                for entry in tm.get_full_trace(incident.get('session_id', ''))
+                if incident.get('flow_id', '') in entry.input_summary
+                or incident.get('attack_type', '') in entry.input_summary
+                or incident.get('src_ip', '') in entry.input_summary
+            ]
+        except Exception:
+            traces = []
+
+        chain_context = []
+        try:
+            from src.correlation import IncidentCorrelationEngine
+            engine = IncidentCorrelationEngine()
+            for chain in engine.get_recent_chains(limit=50):
+                if incident_id in str(chain.get('chain_data', '')):
+                    chain_context.append(chain)
+        except Exception:
+            chain_context = []
+
+        actions = incident.get('recommended_actions') or []
+        response_plan = incident.get('response_plan') or {}
+        reasoning = incident.get('llm_reasoning') or incident.get('llm_analysis') or ''
+        summary = (
+            f"{incident.get('attack_type')} was detected from {incident.get('src_ip')} "
+            f"to {incident.get('dst_ip')} at {incident.get('detected_at')}. "
+            f"The incident is rated {incident.get('severity')} with "
+            f"{float(incident.get('confidence_score') or 0):.0%} confidence. "
+            f"Simulation response: {incident.get('response_taken')}. "
+            f"Primary reasoning: {reasoning[:500]}"
+        )
+
+        return {
+            'incident': incident,
+            'summary': summary,
+            'reasoning': reasoning,
+            'response_plan': response_plan,
+            'recommended_actions': actions,
+            'decision_traces': traces,
+            'attack_chains': chain_context,
+        }
+
+    @staticmethod
+    def _derive_attack_type(row: Dict) -> str:
+        """Infer a dashboard label from the current incident schema."""
+        flow_id = str(row.get('flow_id') or '').replace('-', ' ').replace('_', ' ')
+        analysis = str(row.get('llm_analysis') or '')
+        flags = str(row.get('context_flags') or '')
+        text = f"{flow_id} {analysis} {flags}".lower()
+
+        patterns = [
+            ('exfil', 'Data Exfiltration'),
+            ('lateral', 'Lateral Movement'),
+            ('credential', 'Credential Access'),
+            ('collection', 'Collection'),
+            ('privilege', 'Privilege Escalation'),
+            ('evasion', 'Defense Evasion'),
+            ('persistence', 'Persistence'),
+            ('discovery', 'Discovery'),
+            ('recon', 'Reconnaissance'),
+            ('scan', 'Reconnaissance'),
+            ('initial access', 'Initial Access'),
+            ('brute', 'Initial Access'),
+            ('execution', 'Execution'),
+            ('c2', 'Command and Control'),
+            ('command', 'Command and Control'),
+        ]
+        for needle, label in patterns:
+            if needle in text:
+                return label
+        return 'Suspicious Network Activity'
+
+    @staticmethod
+    def _loads_json(value, default):
+        if value in (None, ''):
+            return default
+        if isinstance(value, (dict, list)):
+            return value
+        try:
+            return json.loads(value)
+        except Exception:
+            return default
 
 
 # ============================================================================

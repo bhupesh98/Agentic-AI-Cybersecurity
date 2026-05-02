@@ -59,8 +59,7 @@ REFERENCES:
 - Implementation Guide: comprehensive-overhaul-guide.txt
 - Project Docs: immediate-guide.txt, PHASE_2_COMPLETION.txt
 
-Author: Abhinav
-Date: November 2025
+
 Version: 1.0.0-hybrid
 ===============================================================================
 """

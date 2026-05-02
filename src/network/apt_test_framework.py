@@ -8,9 +8,6 @@ This framework provides:
 4. Incident response documentation
 
 Designed to be minimally invasive - uses existing infrastructure without modification.
-
-Author: Abhinav
-Date: December 2025
 """
 
 from dataclasses import dataclass, field

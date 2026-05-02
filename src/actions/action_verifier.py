@@ -9,8 +9,6 @@ After an action is executed (block IP, send alert), we need to verify:
 This implements the verification part of autonomous response.
 
 Phase 3 - Day 4: Response Automation
-Author: Abhinav
-Date: November 2025
 """
 
 import logging

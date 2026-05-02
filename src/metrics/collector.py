@@ -6,8 +6,7 @@ aggregates them into the 7 Agentic AI principles.
 
 This is the main interface that existing code will use to record metrics.
 
-Author: Abhinav
-Date: November 2025
+
 """
 
 import os

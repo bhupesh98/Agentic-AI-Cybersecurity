@@ -5,8 +5,7 @@ Provides beautiful, consistent terminal output with colors, emojis, and formatti
 Used across all modules for unified visual presentation.
 
 Location: src/utils/colored_logger.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 from colorama import Fore, Style, init

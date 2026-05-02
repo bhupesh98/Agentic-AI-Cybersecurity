@@ -9,8 +9,7 @@ Beautiful, reusable components for the dashboard:
 - Timeline charts
 - Email log tables
 
-Author: Abhinav
-Date: November 2025
+
 """
 
 import streamlit as st
@@ -238,7 +237,7 @@ def render_email_log(emails: List[Dict]):
 
     st.dataframe(
         df,
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
         height=300
     )
@@ -279,7 +278,7 @@ def render_stats_table(stats: Dict):
 
     st.dataframe(
         df,
-        use_container_width=True,
+        width='stretch',
         hide_index=True,
         height=min(400, len(rows) * 35 + 38)
     )

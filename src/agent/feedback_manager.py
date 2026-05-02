@@ -11,8 +11,7 @@ Key Features:
 - Feedback effectiveness tracking
 
 Location: src/agent/feedback_manager.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 import sqlite3

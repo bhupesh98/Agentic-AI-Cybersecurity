@@ -6,9 +6,6 @@ Provides comprehensive metrics for evaluating APT detection effectiveness:
 - Time-to-detect metrics
 - Detection accuracy
 - Response effectiveness
-
-Author: Abhinav
-Date: December 2025
 """
 
 from dataclasses import dataclass, field

@@ -9,8 +9,7 @@ Generates sophisticated multi-stage attack scenarios that:
 These attacks are designed to be HARD for ML, EASY for LLM.
 
 Location: src/network/apt_campaign.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 import time

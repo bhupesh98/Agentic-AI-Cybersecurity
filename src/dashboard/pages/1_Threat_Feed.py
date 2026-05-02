@@ -17,18 +17,10 @@ st.title("🚨 Live Threat Feed")
 @st.cache_data(ttl=10)
 def load_incidents(limit: int = 50):
     try:
-        from src.memory import get_memory_manager  # type: ignore
-        memory = get_memory_manager()
-        conn = memory._get_connection()
-        rows = conn.execute(
-            f"SELECT incident_id, detected_at, src_ip, attack_type, severity, "
-            f"confidence_score, response_taken FROM incidents "
-            f"ORDER BY detected_at DESC LIMIT {limit}"
-        ).fetchall()
-        conn.close()
-        data = [dict(r) for r in rows]
-        return data
-    except Exception:
+        from src.dashboard.dashboard_data_loader import get_data_loader  # type: ignore
+        return get_data_loader().get_recent_threats(limit=limit)
+    except Exception as exc:
+        st.caption(f"Threat feed unavailable: {exc}")
         return []
 
 
@@ -55,6 +47,7 @@ else:
     column_map = {
         "detected_at": "Time",
         "src_ip": "Source IP",
+        "dst_ip": "Destination IP",
         "attack_type": "Attack Type",
         "severity": "Severity",
         "confidence_score": "Confidence",
@@ -70,20 +63,42 @@ else:
         df = df[df["Severity"].isin(severity_filter)]
 
     # Colour mapping via background_gradient workaround
-    display_cols = ["Time", "Source IP", "Attack Type", "Severity", "Confidence", "Response", "Agent"]
+    display_cols = ["Time", "Source IP", "Destination IP", "Attack Type", "Severity", "Confidence", "Response", "Agent"]
     display_cols = [c for c in display_cols if c in df.columns]
 
     st.dataframe(
         df[display_cols].head(50),
-        use_container_width=True,
+        width='stretch',
         height=520,
     )
     st.caption(f"Showing {len(df)} incidents")
+
+    st.subheader("On-Demand Incident Summary")
+    incident_options = {
+        f"{item.get('detected_at', '')[:19]} | {item.get('attack_type')} | {item.get('src_ip')}": item.get('incident_id')
+        for item in incidents
+    }
+    selected_label = st.selectbox("Incident", list(incident_options.keys()))
+    if st.button("Generate Summary"):
+        try:
+            from src.dashboard.dashboard_data_loader import get_data_loader  # type: ignore
+            summary = get_data_loader().get_incident_summary(incident_options[selected_label])
+            if summary:
+                st.write(summary["summary"])
+                with st.expander("Detection Reasoning", expanded=True):
+                    st.write(summary.get("reasoning", ""))
+                with st.expander("Simulated Response Handling", expanded=True):
+                    st.json(summary.get("response_plan", {}))
+                with st.expander("Decision Trace"):
+                    st.dataframe(pd.DataFrame(summary.get("decision_traces", [])), width='stretch')
+        except Exception as exc:
+            st.warning(f"Summary unavailable: {exc}")
 
 # -- Summary bar chart ------------------------------------------------------
 if incidents:
     df_all = pd.DataFrame(incidents)
     if "severity" in df_all.columns:
+        df_all["severity"] = df_all["severity"].str.upper()
         counts = df_all["severity"].value_counts().reset_index()
         counts.columns = ["Severity", "Count"]
         import plotly.express as px
@@ -93,4 +108,4 @@ if incidents:
                                          "MEDIUM": "#ffc107", "LOW": "#6c757d"},
                      title="Incidents by Severity")
         fig.update_layout(showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')

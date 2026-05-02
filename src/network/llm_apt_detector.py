@@ -11,8 +11,6 @@ Key Features:
 - Concise terminal summary
 
 Location: src/network/llm_apt_detector.py
-Author: Abhinav  
-Date: November 2025
 """
 
 from src.llm_agent.llm_client import get_llm_client

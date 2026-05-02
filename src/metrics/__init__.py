@@ -22,8 +22,7 @@ Usage:
     collector.record_context_analysis(flags=['off_hours'], score=0.75)
     collector.save_metrics()
 
-Author: Abhinav
-Date: November 2025
+
 """
 
 from src.metrics.collector import MetricsCollector, get_metrics_collector
@@ -63,4 +62,3 @@ __all__ = [
 ]
 
 __version__ = '1.0.0-preliminary'
-__author__ = 'Rishabh'

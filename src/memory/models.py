@@ -3,8 +3,7 @@ Memory System Data Models.
 
 Defines data structures for incident storage, retrieval, and correlation.
 
-Author: Abhinav
-Date: November 2025
+
 """
 
 from dataclasses import dataclass, field

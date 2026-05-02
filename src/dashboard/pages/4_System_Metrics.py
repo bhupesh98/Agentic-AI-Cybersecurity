@@ -70,7 +70,7 @@ if budget:
         )
     )
     fig_g.update_layout(height=200, margin=dict(l=5, r=5, t=30, b=5))
-    st.plotly_chart(fig_g, use_container_width=True)
+    st.plotly_chart(fig_g, width='stretch')
 else:
     st.info("LLM budget manager not yet initialised.")
 
@@ -119,7 +119,7 @@ if mem:
                      color_discrete_map={"Critical": "#dc3545", "High": "#fd7e14",
                                           "Medium": "#ffc107", "Low": "#6c757d"})
     fig_sev.update_layout(height=280, margin=dict(l=0, r=0, t=40, b=0))
-    st.plotly_chart(fig_sev, use_container_width=True)
+    st.plotly_chart(fig_sev, width='stretch')
 
 st.markdown("---")
 
@@ -151,6 +151,6 @@ def load_principle_scores():
 
 rows = load_principle_scores()
 if rows:
-    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
 else:
     st.info("Metrics not available yet.")

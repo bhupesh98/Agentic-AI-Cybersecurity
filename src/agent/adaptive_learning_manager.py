@@ -12,8 +12,7 @@ Key Capabilities:
 - Learning history tracking
 
 Location: src/agent/adaptive_learning_manager.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 import sqlite3

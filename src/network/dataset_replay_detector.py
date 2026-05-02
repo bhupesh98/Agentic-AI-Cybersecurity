@@ -6,8 +6,7 @@ This approach ensures ML models work correctly (trained on same data distributio
 while demonstrating all agentic AI capabilities.
 
 Location: src/network/dataset_replay_detector.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 from src.ml_detection.model_loader import get_model_loader

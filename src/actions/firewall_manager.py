@@ -7,8 +7,7 @@ Uses macOS pfctl (packet filter) or Linux iptables depending on OS.
 CRITICAL: This module requires sudo privileges to modify firewall rules.
 
 Phase 3 - Day 2: Response Automation
-Author: Abhinav
-Date: November 2025
+
 """
 
 import sys

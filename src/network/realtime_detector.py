@@ -10,8 +10,7 @@ Integrates all components for live network threat detection:
 - Action Execution (Firewall, Alerts)
 
 Location: src/network/realtime_detector.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 import sys

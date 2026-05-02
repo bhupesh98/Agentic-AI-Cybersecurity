@@ -7,8 +7,7 @@ required by the trained ML models (RF, XGBoost, DNN).
 Approach: Extract ~30 core features accurately, impute rest with smart defaults.
 
 Location: src/network/feature_extractor.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 import numpy as np

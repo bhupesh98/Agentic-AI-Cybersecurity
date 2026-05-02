@@ -8,8 +8,7 @@ Handles persistent storage of Agentic AI metrics to:
 
 Completely separate from incident database to avoid coupling.
 
-Author: Abhinav
-Date: November 2025
+
 """
 
 import sqlite3
@@ -706,3 +705,27 @@ class MetricsStorageManager:
         except Exception as e:
             self.logger.error(f"❌ Failed to retrieve sessions: {e}")
             return []
+
+    def get_recent_sessions(self, limit: int = 20) -> List[Dict[str, Any]]:
+        """Return recent persisted metric summaries for dashboard trend charts."""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                """
+                SELECT session_id, timestamp, overall_agentic_score,
+                       principles_active, principles_partial, principles_baseline
+                FROM metrics_summary
+                ORDER BY timestamp DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+            conn.close()
+            return [dict(row) for row in reversed(rows)]
+        except Exception as e:
+            self.logger.error(f"❌ Failed to retrieve recent sessions: {e}")
+            return []
+
+
+MetricsStorage = MetricsStorageManager

@@ -1,7 +1,5 @@
 -- Memory System Database Schema
 -- SQLite database for structured incident storage
--- Author: Abhinav
--- Date: November 2025
 
 -- Main incidents table
 CREATE TABLE IF NOT EXISTS INCIDENTS (

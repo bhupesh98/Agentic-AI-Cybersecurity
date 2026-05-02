@@ -7,8 +7,7 @@ actually modifying system (firewall, network, etc.)
 Use this for safe testing and demonstration purposes.
 
 Location: src/actions/mock_handlers.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 import logging

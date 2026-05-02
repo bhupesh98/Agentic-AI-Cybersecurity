@@ -6,8 +6,6 @@ It provides the framework for executing autonomous security responses without
 human intervention.
 
 Phase 3 - Response Automation
-Author: Abhinav
-Date: November 2025
 """
 
 import logging

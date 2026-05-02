@@ -9,8 +9,7 @@ Extends the existing memory system with advanced IP reputation learning:
 This component integrates with memory_manager.py to enhance self-learning.
 
 Location: src/memory/ip_reputation_learning.py
-Author: Abhinav
-Date: November 2025
+
 """
 
 import logging

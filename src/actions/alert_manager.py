@@ -9,8 +9,6 @@ Sends alerts via:
 Supports severity-based formatting, throttling, and templating.
 
 Phase 3 - Day 3: Response Automation
-Author: Abhinav
-Date: November 2025
 """
 
 import os

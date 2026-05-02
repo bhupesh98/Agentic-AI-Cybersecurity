@@ -13,8 +13,7 @@ These policies can be used by:
 - Hybrid approach (LLM with policy guidance)
 
 Phase 3 - Day 4: Response Automation
-Author: Abhinav
-Date: November 2025
+
 """
 
 import logging
