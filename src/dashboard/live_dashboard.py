@@ -127,7 +127,6 @@ def get_memory_statistics():
             'Total Incidents': stats.total_incidents,
             'Unique IPs': stats.total_unique_ips,
             'Patterns': stats.total_patterns,
-            'Memory Utilization': f"{stats.memory_utilization_rate:.1%}",
             'Critical': stats.critical_incidents,
             'High': stats.high_incidents,
             'Medium': stats.medium_incidents,
@@ -177,12 +176,6 @@ if SIMULATION_AVAILABLE:
     else:
         st.warning("🔴 **SIMULATION_MODE = False** — live defensive actions are ACTIVE.")
 
-# Status indicator
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    st.markdown("### 🟢 System Status: ACTIVE")
-    st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-
 
 # ============================================================================
 # SIDEBAR - CONTROLS
@@ -208,16 +201,6 @@ time_range = st.sidebar.selectbox(
     index=2
 )
 
-# Multi-page navigation
-st.sidebar.header("📄 Pages")
-st.sidebar.markdown("""
-- **Home** — overview metrics (this page)
-- **Threat Feed** → ← use top nav
-- **Attack Graphs** → ← use top nav
-- **Agent Insights** → ← use top nav
-- **System Metrics** → ← use top nav
-""")
-
 
 # ============================================================================
 # MAIN METRICS - TOP ROW
@@ -228,7 +211,7 @@ st.header("📊 Real-Time Metrics")
 metrics = get_metrics_data()
 memory_stats = get_memory_statistics()
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     total_incidents = memory_stats['Total Incidents'] if memory_stats else 0
@@ -254,14 +237,6 @@ with col3:
         delta="+2" if unique_ips > 0 else "0"
     )
 
-with col4:
-    agentic_score = 88.8 if metrics else 0.0
-    st.metric(
-        label="Agentic AI Score",
-        value=f"{agentic_score:.1f}%",
-        delta="+1.2%" if agentic_score > 0 else "0%"
-    )
-
 st.markdown("---")
 
 
@@ -269,82 +244,82 @@ st.markdown("---")
 # AGENTIC AI PRINCIPLES - GAUGE CHARTS
 # ============================================================================
 
-st.header("🤖 Agentic AI Principles Assessment")
+# st.header("🤖 Agentic AI Principles Assessment")
 
-if metrics:
-    col1, col2, col3, col4 = st.columns(4)
+# if metrics:
+#     col1, col2, col3, col4 = st.columns(4)
 
-    # Access dataclass attributes directly
-    try:
-        principles = [
-            ("Self-Learning", getattr(metrics.self_learning, 'learning_rate',
-             0.85) if hasattr(metrics, 'self_learning') else 0.85),
-            ("Contextual Awareness", getattr(metrics.contextual_awareness,
-             'context_usage_rate', 0.92) if hasattr(metrics, 'contextual_awareness') else 0.92),
-            ("Planning & Reasoning", getattr(metrics.planning_reasoning,
-             'reasoning_quality', 0.88) if hasattr(metrics, 'planning_reasoning') else 0.88),
-            ("Memory Management", getattr(metrics.memory_management, 'memory_utilization',
-             0.87) if hasattr(metrics, 'memory_management') else 0.87)
-        ]
-    except AttributeError:
-        # Fallback to default values if metrics structure is different
-        principles = [
-            ("Self-Learning", 0.85),
-            ("Contextual Awareness", 0.92),
-            ("Planning & Reasoning", 0.88),
-            ("Memory Management", 0.87)
-        ]
+#     # Access dataclass attributes directly
+#     try:
+#         principles = [
+#             ("Self-Learning", getattr(metrics.self_learning, 'learning_rate',
+#              0.85) if hasattr(metrics, 'self_learning') else 0.85),
+#             ("Contextual Awareness", getattr(metrics.contextual_awareness,
+#              'context_usage_rate', 0.92) if hasattr(metrics, 'contextual_awareness') else 0.92),
+#             ("Planning & Reasoning", getattr(metrics.planning_reasoning,
+#              'reasoning_quality', 0.88) if hasattr(metrics, 'planning_reasoning') else 0.88),
+#             ("Memory Management", getattr(metrics.memory_management, 'memory_utilization',
+#              0.87) if hasattr(metrics, 'memory_management') else 0.87)
+#         ]
+#     except AttributeError:
+#         # Fallback to default values if metrics structure is different
+#         principles = [
+#             ("Self-Learning", 0.85),
+#             ("Contextual Awareness", 0.92),
+#             ("Planning & Reasoning", 0.88),
+#             ("Memory Management", 0.87)
+#         ]
 
-    for col, (name, score) in zip([col1, col2, col3, col4], principles):
-        with col:
-            fig = go.Figure(go.Indicator(
-                mode="gauge+number",
-                value=score * 100,
-                title={'text': name},
-                gauge={
-                    'axis': {'range': [None, 100]},
-                    'bar': {'color': "darkblue"},
-                    'steps': [
-                        {'range': [0, 50], 'color': "lightgray"},
-                        {'range': [50, 80], 'color': "gray"},
-                        {'range': [80, 100], 'color': "lightblue"}
-                    ],
-                    'threshold': {
-                        'line': {'color': "red", 'width': 4},
-                        'thickness': 0.75,
-                        'value': 90
-                    }
-                }
-            ))
-            fig.update_layout(height=200, margin=dict(l=10, r=10, t=50, b=10))
-            st.plotly_chart(fig, width='stretch')
-else:
-    st.info("No metrics data available yet. Run detection to generate metrics.")
+#     for col, (name, score) in zip([col1, col2, col3, col4], principles):
+#         with col:
+#             fig = go.Figure(go.Indicator(
+#                 mode="gauge+number",
+#                 value=score * 100,
+#                 title={'text': name},
+#                 gauge={
+#                     'axis': {'range': [None, 100]},
+#                     'bar': {'color': "darkblue"},
+#                     'steps': [
+#                         {'range': [0, 50], 'color': "lightgray"},
+#                         {'range': [50, 80], 'color': "gray"},
+#                         {'range': [80, 100], 'color': "lightblue"}
+#                     ],
+#                     'threshold': {
+#                         'line': {'color': "red", 'width': 4},
+#                         'thickness': 0.75,
+#                         'value': 90
+#                     }
+#                 }
+#             ))
+#             fig.update_layout(height=200, margin=dict(l=10, r=10, t=50, b=10))
+#             st.plotly_chart(fig, width='stretch')
+# else:
+#     st.info("No metrics data available yet. Run detection to generate metrics.")
 
-st.markdown("---")
+# st.markdown("---")
 
 
-# ============================================================================
-# LLM BUDGET STATUS
-# ============================================================================
+# # ============================================================================
+# # LLM BUDGET STATUS
+# # ============================================================================
 
-st.header("💰 LLM Budget Status")
+# st.header("💰 LLM Budget Status")
 
-if BUDGET_AVAILABLE:
-    try:
-        budget = get_budget_manager().get_budget_status()
-        bc1, bc2, bc3, bc4 = st.columns(4)
-        bc1.metric("Calls (this min)",
-                   f"{budget.get('calls_this_minute', 0)}/{budget.get('calls_budget', 0)}")
-        bc2.metric("Calls remaining", budget.get("calls_remaining", 0))
-        bc3.metric("Tokens used (min)", f"{budget.get('tokens_this_minute', 0):,}")
-        bc4.metric("Est. cost (USD)", f"${budget.get('total_cost_estimate_usd', 0):.4f}")
-    except Exception as _be:
-        st.caption(f"Budget data unavailable: {_be}")
-else:
-    st.info("LLM budget manager not initialised.")
+# if BUDGET_AVAILABLE:
+#     try:
+#         budget = get_budget_manager().get_budget_status()
+#         bc1, bc2, bc3, bc4 = st.columns(4)
+#         bc1.metric("Calls (this min)",
+#                    f"{budget.get('calls_this_minute', 0)}/{budget.get('calls_budget', 0)}")
+#         bc2.metric("Calls remaining", budget.get("calls_remaining", 0))
+#         bc3.metric("Tokens used (min)", f"{budget.get('tokens_this_minute', 0):,}")
+#         bc4.metric("Est. cost (USD)", f"${budget.get('total_cost_estimate_usd', 0):.4f}")
+#     except Exception as _be:
+#         st.caption(f"Budget data unavailable: {_be}")
+# else:
+#     st.info("LLM budget manager not initialised.")
 
-st.markdown("---")
+# st.markdown("---")
 
 # ============================================================================
 # THREAT FEED
@@ -465,14 +440,12 @@ if memory_stats:
 
     with col1:
         st.metric("Total Incidents", memory_stats['Total Incidents'])
-        st.metric("Unique IPs", memory_stats['Unique IPs'])
 
     with col2:
-        st.metric("Patterns Identified", memory_stats['Patterns'])
-        st.metric("Memory Utilization", memory_stats['Memory Utilization'])
+        st.metric("Unique IPs", memory_stats['Unique IPs'])
 
     with col3:
-        st.metric("Avg Query Time", memory_stats['Avg Query Time'])
+        st.metric("Patterns Identified", memory_stats['Patterns'])
 else:
     st.info("Memory system not available or no data yet.")
 

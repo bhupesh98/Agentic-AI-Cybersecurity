@@ -716,10 +716,6 @@ class MemoryManager:
             
             conn.close()
             
-            # Calculate memory utilization rate (simplified - would need tracking)
-            # For now, set to 0.0 or calculate based on incidents with memory context
-            stats.memory_utilization_rate = 0.0  # Placeholder - would need tracking
-            
         except Exception as e:
             logger.error(f"Failed to get memory statistics: {e}")
             import traceback

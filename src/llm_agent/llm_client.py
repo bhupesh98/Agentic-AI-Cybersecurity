@@ -51,10 +51,10 @@ def _detect_provider() -> str:
     explicit = os.getenv("LLM_PROVIDER", "auto").lower().strip()
     if explicit != "auto":
         return explicit  # "nvidia", "gemini", "openai", or "none"
-    if os.getenv("NVIDIA_API_KEY"):
-        return "nvidia"
     if os.getenv("GEMINI_API_KEY"):
         return "gemini"
+    if os.getenv("NVIDIA_API_KEY"):
+        return "nvidia"
     if os.getenv("OPENAI_API_KEY"):
         return "openai"
     return "none"
@@ -115,9 +115,9 @@ class CyberSecurityLLM:
     Override with LLM_PROVIDER=nvidia|gemini|openai|none
     """
 
-    def __init__(self):
+    def __init__(self, override_provider: Optional[str] = None):
         """Initialise the LLM client using the best available provider."""
-        provider = _detect_provider()
+        provider = override_provider if override_provider else _detect_provider()
         if provider == "none":
             logger.warning(
                 "⚠️  No LLM API key found (NVIDIA_API_KEY / GEMINI_API_KEY / "
@@ -349,20 +349,20 @@ Provide a clear, concise explanation for a security analyst.
 Your role is to:
 1. Analyze network threats detected by ML models with contextual awareness
 2. Consider factors like: time of day, user behavior, asset criticality, historical patterns
-3. Provide clear, actionable analysis and recommendations
-4. Explain your reasoning process transparently
+3. Provide complete and detailed chain of thought for every detection, how it was discovered, and analysis of why exactly it is flagged.
+4. To mitigate the incident, provide detailed steps showing proper system, firewall, or kubernetes commands being used, and the reason why each step has been performed.
 
 Always respond in JSON format with these fields:
 {
-    "analysis": "Brief summary of the threat",
-    "reasoning": "Step-by-step explanation of your analysis",
+    "analysis": "Detailed summary of the threat and why exactly it is flagged.",
+    "reasoning": "Step-by-step complete chain-of-thought explanation of how it was discovered and your analysis process.",
     "severity": "low|medium|high|critical",
     "confidence": 0.0-1.0,
-    "recommended_actions": ["action1", "action2", ...],
+    "recommended_actions": ["Run details: command/action 1 (Reason: reason 1)", "Run details: command/action 2 (Reason: reason 2)"],
     "context_factors": ["factor1", "factor2", ...]
 }
 
-Be concise but thorough. Focus on what matters most for incident response."""
+Be thorough, providing commands and precise security explanations. Focus on actionable incident response."""
 
     def _build_threat_analysis_prompt(
         self,
@@ -473,12 +473,13 @@ Provide your analysis in the JSON format specified in the system prompt."""
 _global_llm = None
 
 
-def get_llm_client(force_reload: bool = False) -> CyberSecurityLLM:
+def get_llm_client(force_reload: bool = False, provider: Optional[str] = None) -> CyberSecurityLLM:
     """
     Get or create the global LLM client instance.
     
     Args:
         force_reload: If True, create new client even if one exists
+        provider: Force a specific provider
         
     Returns:
         CyberSecurityLLM instance
@@ -486,7 +487,7 @@ def get_llm_client(force_reload: bool = False) -> CyberSecurityLLM:
     global _global_llm
 
     if _global_llm is None or force_reload:
-        _global_llm = CyberSecurityLLM()
+        _global_llm = CyberSecurityLLM(override_provider=provider)
 
     return _global_llm
 

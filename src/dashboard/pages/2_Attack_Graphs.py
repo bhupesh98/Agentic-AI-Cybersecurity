@@ -55,7 +55,6 @@ with col_r:
 st.subheader("Network Threat Graph")
 
 if incidents:
-    import plotly.express as px
 
     df = pd.DataFrame(incidents)
     # Build nodes + edges
@@ -154,11 +153,53 @@ if chains:
         chain = chain_options[selected_chain]
         chain_data = chain.get("stages_json") or {}
         stages = chain_data.get("stages", []) if isinstance(chain_data, dict) else []
-        stage_text = ", ".join(s.get("stage_name", "") for s in stages)
-        st.write(
-            f"{chain.get('campaign_name')} links {chain.get('stage_count')} incidents "
-            f"with {chain.get('confidence', 0):.0%} confidence. Observed stages: {stage_text}."
-        )
+        
+        # Use LLM to generate an explanatory and detailed summary
+        from src.llm_agent.llm_client import get_llm_client
+        import json
+        llm_client = get_llm_client()
+        
+        if llm_client.llm:
+            from langchain_core.messages import SystemMessage, HumanMessage
+            sys_prompt = (
+                "You are an expert cybersecurity analyst. Summarize the following attack graph/chain in detail. "
+                "Explain the threat actor's potential objective, how they progressed step-by-step through the listed stages, "
+                "the reasoning behind correlating these specific incidents together, and what their ultimate expected goal might be "
+                "based on this path. Be thorough and provide detailed explanatory reasoning."
+            )
+            user_prompt = f"Campaign: {chain.get('campaign_name')}\nConfidence: {chain.get('confidence', 0):.0%}\nStages Data:\n{json.dumps(chain_data, indent=2)}"
+            
+            with st.spinner("Generating detailed attack graph analysis..."):
+                try:
+                    response = llm_client.llm.invoke([SystemMessage(content=sys_prompt), HumanMessage(content=user_prompt)])
+                    content = response.content
+                    
+                    if isinstance(content, str) and content.strip().startswith("[") and "'type': 'text'" in content:
+                        try:
+                            import ast
+                            parsed = ast.literal_eval(content.strip())
+                            if isinstance(parsed, list):
+                                content = parsed
+                        except Exception:
+                            pass
+
+                    if isinstance(content, list):
+                        text_blocks = [blk["text"] for blk in content if isinstance(blk, dict) and "text" in blk]
+                        content = "\n".join(text_blocks)
+                    elif not isinstance(content, str):
+                        content = str(content)
+                        
+                    st.markdown(content)
+                except Exception as e:
+                    st.error(f"Error generating summary via LLM: {e}")
+        else:
+            # Fallback if no LLM configured
+            stage_text = ", ".join(s.get("stage_name", "") for s in stages)
+            st.write(
+                f"**Fallback Summary (No LLM active):** {chain.get('campaign_name')} links {chain.get('stage_count')} incidents "
+                f"with {chain.get('confidence', 0):.0%} confidence. Observed stages: {stage_text}."
+            )
+        
         if stages:
             st.dataframe(pd.DataFrame(stages), width='stretch')
 else:

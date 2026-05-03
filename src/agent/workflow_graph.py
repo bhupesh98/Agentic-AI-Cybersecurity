@@ -107,18 +107,18 @@ def _simulation_analysis(candidate: Dict[str, Any]) -> Dict[str, Any]:
     reasons = candidate.get("routing_reasons", [])
 
     response_map = {
-        "Reconnaissance": ["Rate-limit scanner", "Add source IP to watchlist", "Alert SOC"],
-        "Initial Access": ["Block source IP", "Force credential reset for target host", "Alert SOC"],
-        "Execution": ["Isolate target host", "Block source IP", "Collect process telemetry"],
-        "Persistence": ["Block C2 destination", "Hunt for persistence artifacts", "Open incident ticket"],
-        "Privilege Escalation": ["Isolate target host", "Collect privileged logon events", "Alert SOC"],
-        "Defense Evasion": ["Preserve endpoint logs", "Run integrity checks", "Escalate to analyst"],
-        "Credential Access": ["Disable suspected credentials", "Isolate source host", "Alert identity team"],
-        "Discovery": ["Contain source host", "Increase monitoring on scanned subnet", "Alert SOC"],
-        "Lateral Movement": ["Isolate source and destination hosts", "Block lateral protocol", "Collect authentication trail"],
-        "Collection": ["Isolate staging host", "Preserve file access logs", "Alert data owner"],
-        "Command and Control": ["Block C2 destination", "Sinkhole domain/IP", "Start host containment"],
-        "Data Exfiltration": ["Block outbound destination", "Isolate source host", "Open critical data-loss incident"],
+        "Reconnaissance": [f"iptables -A INPUT -s {src_ip} -m limit --limit 5/m -j ACCEPT (Reason: Rate-limit scanner)", f"curl -X POST /api/v1/watchlist/ips -d '{{\"ip\": \"{src_ip}\"}}' (Reason: Add source IP to watchlist)", "curl -X POST /api/v1/soc/alerts -d 'Recon Alert' (Reason: Alert SOC)"],
+        "Initial Access": [f"iptables -A INPUT -s {src_ip} -j DROP (Reason: Block malicious source IP)", f"kubectl exec deployment/auth-service -- /bin/sh -c 'reset-creds {dst_ip}' (Reason: Force credential reset for target host)", "curl -X POST /api/v1/soc/alerts -d 'Initial Access Alert' (Reason: Alert SOC)"],
+        "Execution": [f"kubectl label pod -l ip={dst_ip} isolated=true (Reason: Isolate target host)", f"iptables -A INPUT -s {src_ip} -j DROP (Reason: Block source IP)", f"osqueryi --json 'SELECT name, path, cmdline FROM processes;' (Reason: Collect process telemetry from {dst_ip})"],
+        "Persistence": [f"iptables -A OUTPUT -d {dst_ip} -j DROP (Reason: Block C2 destination)", "osqueryi --json 'SELECT * FROM startup_items;' (Reason: Hunt for persistence artifacts)", "curl -X POST /api/v1/tickets -d 'Persistence Incident Ticket' (Reason: Open incident ticket)"],
+        "Privilege Escalation": [f"kubectl label pod -l ip={dst_ip} isolated=true (Reason: Isolate target host)", "osqueryi --json 'SELECT * FROM syslog_events WHERE facility=\"auth\";' (Reason: Collect privileged logon events)", "curl -X POST /api/v1/soc/alerts -d 'Privilege Escalation Alert' (Reason: Alert SOC)"],
+        "Defense Evasion": ["cp -r /var/log /secure_backup/ (Reason: Preserve endpoint logs)", "debsums -c (Reason: Run integrity checks)", "curl -X POST /api/v1/escalations -d 'Escalate to Tier 2' (Reason: Escalate to analyst)"],
+        "Credential Access": ["usermod -L $(whoami) (Reason: Disable suspected credentials)", f"kubectl label pod -l ip={src_ip} isolated=true (Reason: Isolate source host)", "curl -X POST /api/v1/identity_team/alerts -d 'Credential Access' (Reason: Alert identity team)"],
+        "Discovery": [f"kubectl label pod -l ip={src_ip} quarantined=true (Reason: Contain source host)", f"snort --enable_subnet_monitoring={dst_ip}/24 (Reason: Increase monitoring on scanned subnet)", "curl -X POST /api/v1/soc/alerts -d 'Discovery Activity' (Reason: Alert SOC)"],
+        "Lateral Movement": [f"iptables -A FORWARD -s {src_ip} -d {dst_ip} -j DROP (Reason: Isolate source and destination hosts)", "iptables -A FORWARD -p tcp --dport 445 -j DROP (Reason: Block lateral protocol SMB)", "osqueryi --json 'SELECT * FROM logged_in_users;' (Reason: Collect authentication trail)"],
+        "Collection": [f"kubectl label pod -l ip={dst_ip} isolated=true (Reason: Isolate staging host)", "cp /var/log/audit/audit.log /secure_backup/ (Reason: Preserve file access logs)", "curl -X POST /api/v1/data_owner/alerts -d 'Data Collection Alert' (Reason: Alert data owner)"],
+        "Command and Control": [f"iptables -A OUTPUT -d {dst_ip} -j DROP (Reason: Block C2 destination)", f"echo '{dst_ip} sinkhole.local' >> /etc/hosts (Reason: Sinkhole domain/IP)", f"kubectl label pod -l ip={src_ip} isolated=true (Reason: Start host containment)"],
+        "Data Exfiltration": [f"iptables -A OUTPUT -d {dst_ip} -j DROP (Reason: Block outbound destination)", f"kubectl label pod -l ip={src_ip} isolated=true (Reason: Isolate source host)", "curl -X POST /api/v1/incident_response -d 'Critical Data Loss Incident' (Reason: Open critical data-loss incident)"],
     }
     actions = response_map.get(attack_type, ["Alert SOC", "Monitor source IP"])
 

@@ -7,7 +7,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirna
 
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
 
 st.set_page_config(page_title="Threat Feed", page_icon="🚨", layout="wide")
 st.title("🚨 Live Threat Feed")
@@ -84,13 +83,46 @@ else:
             from src.dashboard.dashboard_data_loader import get_data_loader  # type: ignore
             summary = get_data_loader().get_incident_summary(incident_options[selected_label])
             if summary:
-                st.write(summary["summary"])
-                with st.expander("Detection Reasoning", expanded=True):
-                    st.write(summary.get("reasoning", ""))
-                with st.expander("Simulated Response Handling", expanded=True):
-                    st.json(summary.get("response_plan", {}))
-                with st.expander("Decision Trace"):
-                    st.dataframe(pd.DataFrame(summary.get("decision_traces", [])), width='stretch')
+                st.markdown(f"### {summary.get('incident', {}).get('attack_type', 'Incident')} Analysis")
+                st.info(summary["summary"])
+
+                tab1, tab2, tab3 = st.tabs(["🔍 Detection Reasoning & Analysis", "🛡️ Mitigation & Response", "📊 Decision Traces"])
+                
+                with tab1:
+                    st.markdown("#### Chain of Thought & Discovery")
+                    st.write("Below is the complete analysis of how the incident was discovered and why it was flagged.")
+                    st.markdown(f"**Analysis:**\n\n{summary.get('reasoning', 'No reasoning available.')}")
+                    
+                    if "attack_chains" in summary and summary["attack_chains"]:
+                        st.markdown("#### Correlation Context")
+                        st.write("This incident is part of the following broader attack chains:")
+                        st.json(summary["attack_chains"])
+
+                with tab2:
+                    st.markdown("#### Mitigation Steps Taken")
+                    st.write("Proper commands and step-by-step reasoning for the simulated response.")
+                    
+                    plan = summary.get("response_plan", {})
+                    actions = summary.get("recommended_actions", [])
+                    
+                    if plan or actions:
+                        if plan:
+                            st.json(plan)
+                        if actions:
+                            st.markdown("##### Executed Actions")
+                            for action in actions:
+                                st.markdown(f"- **{action}**")
+                    else:
+                        st.write("No response recorded.")
+
+                with tab3:
+                    st.markdown("#### Decision Traces")
+                    traces = summary.get("decision_traces", [])
+                    if traces:
+                        st.dataframe(pd.DataFrame(traces), width='stretch')
+                    else:
+                        st.write("No decision traces found for this incident.")
+
         except Exception as exc:
             st.warning(f"Summary unavailable: {exc}")
 
